@@ -68,16 +68,14 @@ export class ItemService {
     );
   }
 
-  // private handleError(error: HttpErrorResponse) {
-  //   let errorMessage = 'An unknown error occurred!';
-  //   if (error.error instanceof ErrorEvent) {
-  //     errorMessage = `Error: ${error.error.message}`;
-  //   } else {
-  //     errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-  //   }
-  //   console.error(errorMessage);
-  //   return throwError(() => new Error(errorMessage));
-  // }
+  /**
+   * Fetches the user's uploaded items and liked items for the profile page
+   */
+  getUserProfile(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/get_profile.php?user_id=${userId}`).pipe(
+      catchError(this.handleError)
+    );
+  }
 
 
 }

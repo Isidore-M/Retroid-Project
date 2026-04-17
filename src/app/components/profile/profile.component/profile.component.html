@@ -1,0 +1,98 @@
+<div class="dashboard-wrapper">
+
+  <nav class="custom-nav d-flex justify-content-between align-items-center mb-5">
+    <div class="nav-left d-flex align-items-center">
+      <button class="btn-pixel-plus me-3" routerLink="/dashboard">
+        <i class="bi bi-arrow-left"></i> Back to Market
+      </button>
+    </div>
+    <div class="nav-right">
+      <button class="btn-logout" (click)="logout()">
+        <i class="bi bi-power"></i> Exit
+      </button>
+    </div>
+  </nav>
+
+  <section class="profile-header text-center mb-5">
+    <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'"
+         class="rounded-circle border border-dark border-3 mb-3"
+         style="width: 120px; height: 120px; object-fit: cover;"
+         (error)="$any($event.target).src='/avatars/1.jpeg'" alt="Avatar">
+
+    <h1 class="pixel-font">{{ user?.username }}</h1>
+    <div class="xp-badge d-inline-flex align-items-center justify-content-center px-4 py-2 mt-2" style="background: var(--retro-green); border: 2px solid black; border-radius: 8px;">
+      <strong class="fs-4">{{ user?.points }}</strong>
+      <img src="assets/coin.svg" class="coin-icon ms-2" style="width: 24px;" alt="XP">
+    </div>
+  </section>
+
+  <div class="d-flex justify-content-center gap-3 mb-5">
+    <button type="button" class="filter-btn" [class.active]="activeTab === 'listings'" (click)="setTab('listings', $event)">
+      My Listings ({{ myItems.length }})
+    </button>
+    <button type="button" class="filter-btn" [class.active]="activeTab === 'favorites'" (click)="setTab('favorites', $event)">
+      My Favorites ({{ likedItems.length }})
+    </button>
+  </div>
+
+  <section *ngIf="activeTab === 'listings'">
+    <div class="popular-grid" *ngIf="myItems.length > 0">
+      <div class="popular-card" *ngFor="let item of myItems">
+        <div class="popular-img-box">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
+        </div>
+        <div class="popular-footer d-flex justify-content-between p-3">
+          <div>
+            <h3 class="pop-item-name">{{ item.name }}</h3>
+            <span class="text-muted" style="font-size: 0.8rem;">Listed by you</span>
+          </div>
+          <div class="pop-price text-end">
+            <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
+            <ng-container *ngIf="item.currency_type === 'points'">{{ item.price }} <img src="assets/coin.svg" class="coin-icon" alt="coins"></ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state-container" *ngIf="myItems.length === 0">
+      <div class="text-center">
+        <i class="bi bi-box fs-1 text-muted mb-3"></i>
+        <h3 class="text-muted pixel-font">No listings yet</h3>
+        <p class="text-muted">Head back to the market to post your first item.</p>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="activeTab === 'favorites'">
+    <div class="popular-grid" *ngIf="likedItems.length > 0">
+      <div class="popular-card" *ngFor="let item of likedItems">
+        <div class="popular-img-box">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
+        </div>
+        <div class="popular-footer d-flex justify-content-between align-items-center p-3">
+          <div class="item-details">
+            <h3 class="pop-item-name">{{ item.name }}</h3>
+            <div class="pop-meta">
+              <span class="posted-by">by <strong>{{ item.username }}</strong></span>
+            </div>
+          </div>
+          <div class="like-container d-flex align-items-center">
+            <svg class="pixel-heart liked" viewBox="0 0 10 10" width="20" height="20" style="fill: #ff4757; shape-rendering: crispedges;">
+              <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
+            </svg>
+            <span class="like-count ms-2">{{ item.likes }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state-container" *ngIf="likedItems.length === 0">
+      <div class="text-center">
+        <i class="bi bi-heart fs-1 text-muted mb-3"></i>
+        <h3 class="text-muted pixel-font">No favorites</h3>
+        <p class="text-muted">Items you like in the market will appear here.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
