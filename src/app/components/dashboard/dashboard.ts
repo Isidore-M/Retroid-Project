@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ItemService } from '../../services/item';
+import { ItemService } from '../../services/item'; // Or item.service depending on your filename
 
 @Component({
   selector: 'app-dashboard',
@@ -14,8 +14,9 @@ import { ItemService } from '../../services/item';
 export class DashboardComponent implements OnInit {
   user: any;
 
-  // 1. MARKETPLACE ARRAY (Dynamic from Database)
-  marketplaceItems: any[] = [];
+  // 1. DATA ARRAYS
+  allMarketplaceItems: any[] = []; // The 'Master List' that holds everything fetched from DB
+  marketplaceItems: any[] = [];    // The 'Display List' that updates when you search/filter
 
   // 2. BIDDING ROOM ARRAY (Static for now, Admin only later)
   biddingItems: any[] = [
@@ -23,7 +24,11 @@ export class DashboardComponent implements OnInit {
     { id: 2, name: 'Mario Kart', category: 'Games', price: 150, currency_type: 'points' }
   ];
 
-  // Model for the "Post Item" form
+  // 3. FILTER & SEARCH STATES
+  searchQuery: string = '';
+  activeCategory: string = 'All';
+
+  // 4. MODEL FOR THE "POST ITEM" FORM
   newItem = {
     name: '',
     category: '',
@@ -37,7 +42,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private router: Router,
     private itemService: ItemService,
-    private cdr: ChangeDetectorRef // 👈 INJECTED HERE: Gives us the power to force screen updates
+    private cdr: ChangeDetectorRef // Gives us the power to force screen updates
   ) {}
 
   ngOnInit() {
@@ -54,16 +59,52 @@ export class DashboardComponent implements OnInit {
    * Fetches items from the PHP backend and organizes them for the UI
    */
   loadMarketplace() {
-    this.itemService.getItems().subscribe({
+    // Pass the user ID so the backend knows whose "Likes" to check
+    this.itemService.getItems(this.user.id).subscribe({
       next: (data) => {
-        // Marketplace logic: show all uploaded items, newest first
-        this.marketplaceItems = [...data].sort((a, b) => b.id - a.id);
+        // Map the SQL 1/0 'is_liked' to a strict true/false boolean for Angular's UI
+        this.allMarketplaceItems = data.map(item => ({
+          ...item,
+          isLiked: item.is_liked == 1 // Converts SQL result to a boolean
+        })).sort((a, b) => b.id - a.id);
 
-        // 👈 THE FIX: Force Angular to redraw the screen immediately!
-        this.cdr.detectChanges();
+        // Run the filters immediately to populate the screen
+        this.applyFilters();
       },
       error: (err) => console.error("Error loading items:", err)
     });
+  }
+
+  /**
+   * Changes the active category and triggers the filter
+   */
+  setCategory(category: string) {
+    this.activeCategory = category;
+    this.applyFilters();
+  }
+
+  /**
+   * The core filtering engine: handles both search text and categories
+   */
+  applyFilters() {
+    let filteredList = this.allMarketplaceItems;
+
+    // Step 1: Filter by Category (if not 'All')
+    if (this.activeCategory !== 'All') {
+      filteredList = filteredList.filter(item => item.category === this.activeCategory);
+    }
+
+    // Step 2: Filter by Search Text (if user typed something)
+    if (this.searchQuery.trim() !== '') {
+      const lowerCaseQuery = this.searchQuery.toLowerCase();
+      filteredList = filteredList.filter(item =>
+        item.name.toLowerCase().includes(lowerCaseQuery)
+      );
+    }
+
+    // Step 3: Update the display array and force a screen refresh
+    this.marketplaceItems = filteredList;
+    this.cdr.detectChanges();
   }
 
   onFileSelected(event: any) {
@@ -125,5 +166,27 @@ export class DashboardComponent implements OnInit {
   logout() {
     localStorage.removeItem('user');
     this.router.navigate(['/login']);
+  }
+
+  /**
+   * Handles the Smart Like/Unlike toggling
+   */
+  toggleLike(item: any) {
+    // 1. Optimistic Update: Flip the UI instantly
+    item.isLiked = !item.isLiked;
+    // Add 1 if liked, subtract 1 if unliked
+    item.likes = Number(item.likes) + (item.isLiked ? 1 : -1);
+    this.cdr.detectChanges(); // Force screen update
+
+    // 2. Sync with Backend
+    this.itemService.likeItem(item.id, this.user.id).subscribe({
+      error: (err) => {
+        // Rollback UI if the server fails or connection drops
+        item.isLiked = !item.isLiked;
+        item.likes = Number(item.likes) + (item.isLiked ? 1 : -1);
+        this.cdr.detectChanges();
+        console.error("Could not sync like state:", err);
+      }
+    });
   }
 }

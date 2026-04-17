@@ -412,3 +412,31 @@
 .icon-btn:hover {
   color: #f3a04b;
 }
+
+/* Prevents the page from jumping when a category is empty */
+.empty-state-container {
+  min-height: 400px; /* Adjust this to match the height of your item cards */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.02);
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.pixel-heart {
+  fill: #ccc; /* Default gray */
+  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.2s;
+  shape-rendering: crispedges; /* Keeps pixels sharp */
+}
+
+.pixel-heart.liked {
+  fill: #ff4757; /* Retro red */
+  transform: scale(1.2);
+}
+
+.like-container:hover .pixel-heart {
+  transform: scale(1.1);
+}

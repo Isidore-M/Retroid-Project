@@ -79,26 +79,31 @@
   </section>
 
   <section class="action-bar d-flex justify-content-between align-items-center mt-5">
-    <div class="filter-buttons d-flex gap-2">
-      <button class="filter-btn active">Games</button>
-      <button class="filter-btn">Consoles</button>
-      <button class="filter-btn">Collectibles</button>
-      <button class="filter-btn">Others</button>
-    </div>
+  <div class="filter-buttons d-flex gap-2">
+    <button type="button" class="filter-btn" [class.active]="activeCategory === 'All'" (click)="setCategory('All')">All</button>
+    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Games'" (click)="setCategory('Games')">Games</button>
+    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Consoles'" (click)="setCategory('Consoles')">Consoles</button>
+    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Collectibles'" (click)="setCategory('Collectibles')">Collectibles</button>
+    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Others'" (click)="setCategory('Others')">Others</button>
+  </div>
 
-    <div class="search-container">
-      <input type="text" placeholder="Search for an item" class="search-input">
-      <button class="search-btn"><i class="bi bi-search"></i></button>
-    </div>
-  </section>
+  <div class="search-container">
+    <input type="text"
+           placeholder="Search for an item"
+           class="search-input"
+           [(ngModel)]="searchQuery"
+           (input)="applyFilters()">
+    <button type="button" class="search-btn"><i class="bi bi-search"></i></button>
+  </div>
+</section>
 
-  <section class="most-popular mt-5">
+<section class="most-popular mt-5">
     <div class="section-header d-flex justify-content-between align-items-center mb-4">
       <h2 class="section-title">Marketplace</h2>
       <a href="#" class="view-all">View all ></a>
     </div>
 
-    <div class="popular-grid">
+    <div class="popular-grid" *ngIf="marketplaceItems.length > 0">
       <div class="popular-card" *ngFor="let item of marketplaceItems">
         <div class="popular-img-box">
           <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
@@ -117,18 +122,28 @@
                   {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
                 </ng-container>
               </span>
-
             </div>
           </div>
 
-          <div class="like-container d-flex align-items-center">
-            <i class="bi bi-heart-fill heart-icon"></i>
-            <span class="like-count">{{ item.likes }} likes</span>
-          </div>
+                  <div class="like-container d-flex align-items-center" (click)="toggleLike(item)" style="cursor: pointer;">
+          <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
+            <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
+          </svg>
+          <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
+        </div>
         </div>
       </div>
     </div>
+
+    <div class="empty-state-container" *ngIf="marketplaceItems.length === 0">
+      <div class="d-flex flex-column justify-content-center align-items-center text-center">
+        <i class="bi bi-controller fs-1 text-muted mb-3"></i>
+        <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
+        <p class="text-muted">There are currently no items matching this category.</p>
+      </div>
+    </div>
   </section>
+
 </div>
 
 <div class="modal fade" id="postItemModal" tabindex="-1" aria-hidden="true">

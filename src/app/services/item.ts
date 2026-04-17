@@ -19,7 +19,7 @@ export class ItemService {
    * Sends Item data + Image to PHP
    */
   postItem(formData: FormData): Observable<any> {
-    console.log("🚀 Service: Initiating POST to:", `${this.apiUrl}/post_item.php`);
+    console.log("Service: Initiating POST to:", `${this.apiUrl}/post_item.php`);
 
     return this.http.post(`${this.apiUrl}/post_item.php`, formData).pipe(
       tap(response => console.log("✅ Server Response:", response)),
@@ -30,12 +30,11 @@ export class ItemService {
   /**
    * Fetches all marketplace items
    */
-  getItems(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/get_items.php`).pipe(
+  getItems(userId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/get_items.php?user_id=${userId}`).pipe(
       catchError(this.handleError)
     );
   }
-
   /**
    * Global Error Handler to pinpoint connection issues
    */
@@ -50,13 +49,35 @@ export class ItemService {
       errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
 
       if (error.status === 0) {
-        errorMessage = "⚠️ Connection Refused! Check if Apache is running and your URL is correct.";
+        errorMessage = "Connection Refused! Check if Apache is running and your URL is correct.";
       } else if (error.status === 404) {
-        errorMessage = "⚠️ 404 Not Found! PHP file path is wrong.";
+        errorMessage = "404 Not Found! PHP file path is wrong.";
       }
     }
 
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+ likeItem(itemId: number, userId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/like_item.php`, {
+      item_id: itemId,
+      user_id: userId
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // private handleError(error: HttpErrorResponse) {
+  //   let errorMessage = 'An unknown error occurred!';
+  //   if (error.error instanceof ErrorEvent) {
+  //     errorMessage = `Error: ${error.error.message}`;
+  //   } else {
+  //     errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+  //   }
+  //   console.error(errorMessage);
+  //   return throwError(() => new Error(errorMessage));
+  // }
+
+
 }

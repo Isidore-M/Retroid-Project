@@ -37,3 +37,17 @@ try {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => $e->getMessage()]);
 }
+// Grab the user ID from the URL parameter
+$current_user_id = $_GET['user_id'] ?? 0;
+
+// Use a sub-query to check if this specific user liked the item
+$query = "SELECT items.*, users.username,
+          EXISTS(SELECT 1 FROM item_likes WHERE item_likes.item_id = items.id AND item_likes.user_id = :uid) as is_liked
+          FROM items
+          JOIN users ON items.user_id = users.id
+          ORDER BY items.id DESC";
+
+$stmt = $conn->prepare($query);
+// Bind the user ID so the query knows who is asking
+$stmt->execute(['uid' => $current_user_id]);
+$items = $stmt->fetchAll(PDO::FETCH_ASSOC);
