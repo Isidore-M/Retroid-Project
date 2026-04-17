@@ -1,0 +1,21 @@
+.hero-banner {
+    background-color: #88C45D; /* That specific green from your image */
+    min-height: 300px;
+}
+
+.pixel-font { font-family: 'Press Start 2P', cursive; }
+
+.points-badge {
+    background-color: #fff;
+    border: 2px solid #000;
+    padding: 5px 15px;
+    font-weight: bold;
+    color: #f3a04b;
+}
+
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #000;
+    border-radius: 5px;
+}

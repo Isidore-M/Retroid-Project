@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // Import for ngModel
 import { CommonModule } from '@angular/common'; // Useful for *ngIf or *ngFor
 
 @Component({
   selector: 'app-login',
   standalone: true, // This tells Angular it doesn't need a Module
-  imports: [FormsModule, CommonModule], // Add FormsModule here
+  imports: [FormsModule, CommonModule,RouterModule], 
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })

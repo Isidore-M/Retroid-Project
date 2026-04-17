@@ -1,47 +1,46 @@
 <?php
+// 1. Absolute first lines - no spaces before this!
 header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Content-Type: application/json; charset=UTF-8");
+
+// Handle pre-flight (OPTIONS)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 include_once '../config/database.php';
 
-// Get posted data
-$data = json_decode(file_get_contents("php://input"));
+// 2. Get the data
+$content = file_get_contents("php://input");
+$decoded = json_decode($content, true);
 
-if(!empty($data->username) && !empty($data->password)) {
+// 3. Logic
+if (isset($decoded['username']) && isset($decoded['password'])) {
+    $user = $decoded['username'];
+    $pass = $decoded['password'];
 
-    $query = "SELECT id, username, password, avatar_id, points FROM users WHERE username = ? LIMIT 0,1";
+    $query = "SELECT * FROM users WHERE username = :u LIMIT 1";
     $stmt = $conn->prepare($query);
-    $stmt->execute([$data->username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute(['u' => $user]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // In a real app, use password_verify($data->password, $user['password'])
-    // For now, we'll check plain text if you haven't hashed them yet
-    if($user && ($data->password == $user['password'])) {
-
-        // Gamification: Award 10 points for daily login
-        // (You could add logic here to only award this once per 24 hours)
-        $updatePoints = "UPDATE users SET points = points + 10 WHERE id = ?";
-        $upd = $conn->prepare($updatePoints);
-        $upd->execute([$user['id']]);
-
-        http_response_code(200);
+    if ($row && $pass == $row['password']) {
         echo json_encode([
-            "message" => "Login successful",
+            "status" => "success",
             "user" => [
-                "id" => $user['id'],
-                "username" => $user['username'],
-                "avatar_id" => $user['avatar_id'],
-                "points" => $user['points'] + 10 // Reflecting the bonus
+                "id" => $row['id'],
+                "username" => $row['username'],
+                "points" => $row['points']
             ]
         ]);
     } else {
         http_response_code(401);
-        echo json_encode(["message" => "Invalid username or password."]);
+        echo json_encode(["message" => "Invalid credentials. Check your SQL table!"]);
     }
 } else {
     http_response_code(400);
-    echo json_encode(["message" => "Incomplete data."]);
+    echo json_encode(["message" => "PHP received empty data", "raw_received" => $content]);
 }
-?>

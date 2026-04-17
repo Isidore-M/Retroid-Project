@@ -6,12 +6,17 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  // Update this to match your local path
-  private apiUrl = 'http://localhost/retroid/backend/api/login.php';
+  // Centralized URL
+  private baseUrl = 'http://localhost/Retroid/api';
 
   constructor(private http: HttpClient) { }
 
   login(credentials: any): Observable<any> {
-    return this.http.post(this.apiUrl, credentials);
+    return this.http.post(`${this.baseUrl}/login.php`, credentials);
+  }
+
+  // Add this method to fix the 'Property does not exist' error
+  register(userData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/register.php`, userData);
   }
 }

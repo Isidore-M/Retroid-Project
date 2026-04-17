@@ -1,1 +1,31 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <header class="d-flex justify-content-between align-items-center p-3 bg-white border-bottom shadow-sm">
+  <div class="logo">
+     <img src="assets/logo-black.png" alt="Retroid" height="30">
+  </div>
+
+  <div class="user-info d-flex align-items-center">
+    <span class="me-3">Hey <strong>{{ user?.username }}</strong></span>
+    <span class="points-badge me-3">{{ user?.points }} XP</span>
+
+    <button (click)="logout()" class="btn btn-outline-danger btn-sm rounded-pill me-3">
+      Logout
+    </button>
+
+    <img [src]="'/avatars/' + user?.avatar_id + '.jpg'" class="avatar-sm" alt="Avatar">
+  </div>
+</header>
+
+  <div class="hero-banner p-5 text-center">
+    <h1 class="pixel-font text-dark">Loremp ipsum dolor</h1>
+    <p class="w-50 mx-auto">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt...</p>
+
+    <div class="monitor-row d-flex justify-content-center gap-4 mt-4">
+       <img src="assets/monitor-icon.png" height="100" *ngFor="let i of [1,2,3]">
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    <h3 class="pixel-font-sm">The bidding room</h3>
+    </div>
+</div>
