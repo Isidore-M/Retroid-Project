@@ -1,47 +1,46 @@
 <div class="dashboard-wrapper">
-<nav class="custom-nav d-flex justify-content-between align-items-center">
-  <div class="nav-left">
-    <img src="/logo-black.jpg" alt="Retroid" class="nav-logo">
-    <span class="logo-text">Retroid</span>
-  </div>
+  <nav class="custom-nav d-flex justify-content-between align-items-center">
+    <div class="nav-left">
+      <img src="assets/logo-black.jpg" alt="Retroid" class="nav-logo">
+      <span class="logo-text">Retroid</span>
+    </div>
 
-  <div class="nav-right d-flex align-items-center">
+    <div class="nav-right d-flex align-items-center">
+      <button class="btn-pixel-plus me-3" data-bs-toggle="modal" data-bs-target="#postItemModal">
+        <i class="bi bi-plus-lg"></i> Post an Item
+      </button>
 
-    <button class="btn-pixel-plus me-3" data-bs-toggle="modal" data-bs-target="#postItemModal">
-      <i class="bi bi-plus-lg"></i> Post an Item
-    </button>
-
-    <div class="user-pill-container" routerLink="/profile" style="cursor: pointer;">
-      <div class="user-pill d-flex align-items-center">
-        <div class="user-meta text-end me-3">
-          <span class="welcome-text d-block"><span id="hey">Hey</span> {{ user?.username }}</span>
-          <span class="xp-text d-flex align-items-center justify-content-end">
-            {{ user?.points }}
-            <img src="/coin.svg" class="coin-icon ms-1" alt="coins">
-          </span>
+      <div class="user-pill-container" routerLink="/profile" style="cursor: pointer;">
+        <div class="user-pill d-flex align-items-center">
+          <div class="user-meta text-end me-3">
+            <span class="welcome-text d-block"><span id="hey">Hey</span> {{ user?.username }}</span>
+            <span class="xp-text d-flex align-items-center justify-content-end">
+              {{ user?.points }}
+              <img src="coin.svg" class="coin-icon ms-1" alt="coins">
+            </span>
+          </div>
+          <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'"
+               class="nav-avatar"
+               (error)="$any($event.target).src='/avatars/1.jpeg'"
+               alt="User">
         </div>
-        <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'"
-             class="nav-avatar"
-             (error)="$any($event.target).src='/avatars/1.jpeg'"
-             alt="User">
+      </div>
+
+      <div class="nav-icons ms-4 d-flex align-items-center">
+        <button class="icon-btn"><i class="bi bi-sliders"></i></button>
+
+        <button class="icon-btn position-relative me-2">
+          <i class="bi bi-bell"></i>
+          <span class="notif-dot"></span>
+        </button>
+
+        <button class="btn-logout ms-2" (click)="logout()">
+          <i class="bi bi-power"></i>
+          <span class="logout-text ms-1">Exit</span>
+        </button>
       </div>
     </div>
-
-    <div class="nav-icons ms-4 d-flex align-items-center">
-      <button class="icon-btn"><i class="bi bi-sliders"></i></button>
-
-      <button class="icon-btn position-relative me-2">
-        <i class="bi bi-bell"></i>
-        <span class="notif-dot"></span>
-      </button>
-
-      <button class="btn-logout ms-2" (click)="logout()">
-        <i class="bi bi-power"></i>
-        <span class="logout-text ms-1">Exit</span>
-      </button>
-    </div>
-  </div>
-</nav>
+  </nav>
 
   <section class="hero-banner">
     <div class="hero-content text-center">
@@ -50,12 +49,15 @@
          do eiusmod tempor incididunt ut labore et dolore magna <br>
          aliqua. Ut enim ad minim veniam.</p>
     </div>
-    <img src="/hero-background.jpg" class="hero-img" alt="Hero background">
+    <img src="assets/hero-background.jpg" class="hero-img" alt="Hero background">
   </section>
 
   <section class="bidding-room mt-5">
     <div class="section-header d-flex justify-content-between align-items-center mb-4">
-      <h2 class="section-title">The bidding room</h2>
+      <h2 class="section-title d-flex align-items-center gap-2">
+        The bidding room
+        <span class="badge bg-dark text-white" style="font-size: 8px; padding: 4px 6px;">ADMIN ONLY</span>
+      </h2>
       <a href="#" class="view-all">View all ></a>
     </div>
 
@@ -92,29 +94,31 @@
 
   <section class="most-popular mt-5">
     <div class="section-header d-flex justify-content-between align-items-center mb-4">
-      <h2 class="section-title">Most popular</h2>
+      <h2 class="section-title">Marketplace</h2>
       <a href="#" class="view-all">View all ></a>
     </div>
 
     <div class="popular-grid">
-      <div class="popular-card" *ngFor="let item of popularItems">
+      <div class="popular-card" *ngFor="let item of marketplaceItems">
         <div class="popular-img-box">
-          <img [src]="'/items/popular-' + item.id + '.jpg'" alt="Popular Item">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
         </div>
 
         <div class="popular-footer d-flex justify-content-between align-items-center p-3">
           <div class="item-details">
             <h3 class="pop-item-name">{{ item.name }}</h3>
             <div class="pop-meta d-flex align-items-center">
-  <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
-  <span class="dot-separator mx-2">•</span>
-  <span class="pop-price">
-    <ng-container *ngIf="item.currencyType === 'dollars'">${{ item.price }}</ng-container>
-    <ng-container *ngIf="item.currencyType === 'points'">
-      {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
-    </ng-container>
-  </span>
-</div>
+              <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
+              <span class="dot-separator mx-2">•</span>
+
+              <span class="pop-price">
+                <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
+                <ng-container *ngIf="item.currency_type === 'points'">
+                  {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
+                </ng-container>
+              </span>
+
+            </div>
           </div>
 
           <div class="like-container d-flex align-items-center">

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ItemService } from '../../services/item';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,20 +14,13 @@ import { FormsModule } from '@angular/forms';
 export class DashboardComponent implements OnInit {
   user: any;
 
-  // Placeholder arrays to prevent "Property does not exist on type number" errors
-  // Once your PHP API is ready, you will fill these with real data from the database
-  biddingItems = [
-    { id: 1, name: 'Gameboy Color', category: 'Consoles', price: 300, currencyType: 'points' },
-    { id: 2, name: 'Mario Kart', category: 'Games', price: 150, currencyType: 'points' },
-    { id: 3, name: 'Zelda Poster', category: 'Collectibles', price: 50, currencyType: 'points' },
-    { id: 4, name: 'NES Controller', category: 'Others', price: 80, currencyType: 'points' },
-    { id: 5, name: 'Sonic Plush', category: 'Collectibles', price: 120, currencyType: 'points' }
-  ];
+  // 1. MARKETPLACE ARRAY (Dynamic from Database)
+  marketplaceItems: any[] = [];
 
-  popularItems = [
-    { id: 1, name: 'Sega Genesis', username: 'isidore', category: 'Consoles', price: 120, currencyType: 'dollars', likes: 15 },
-    { id: 2, name: 'Pokemon Blue', username: 'kheren', category: 'Games', price: 400, currencyType: 'points', likes: 22 },
-    { id: 3, name: 'Retro T-Shirt', username: 'isdor', category: 'Others', price: 25, currencyType: 'dollars', likes: 10 }
+  // 2. BIDDING ROOM ARRAY (Static for now, Admin only later)
+  biddingItems: any[] = [
+    { id: 1, name: 'Gameboy Color', category: 'Consoles', price: 300, currency_type: 'points' },
+    { id: 2, name: 'Mario Kart', category: 'Games', price: 150, currency_type: 'points' }
   ];
 
   // Model for the "Post Item" form
@@ -40,15 +34,36 @@ export class DashboardComponent implements OnInit {
 
   imagePreview: string | ArrayBuffer | null = null;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private itemService: ItemService,
+    private cdr: ChangeDetectorRef // 👈 INJECTED HERE: Gives us the power to force screen updates
+  ) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.user = JSON.parse(savedUser);
+      this.loadMarketplace(); // Fetch real items on load
     } else {
       this.router.navigate(['/login']);
     }
+  }
+
+  /**
+   * Fetches items from the PHP backend and organizes them for the UI
+   */
+  loadMarketplace() {
+    this.itemService.getItems().subscribe({
+      next: (data) => {
+        // Marketplace logic: show all uploaded items, newest first
+        this.marketplaceItems = [...data].sort((a, b) => b.id - a.id);
+
+        // 👈 THE FIX: Force Angular to redraw the screen immediately!
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error("Error loading items:", err)
+    });
   }
 
   onFileSelected(event: any) {
@@ -69,24 +84,28 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // Prepare FormData for the future API call
     const formData = new FormData();
     formData.append('name', this.newItem.name);
     formData.append('category', this.newItem.category);
-    formData.append('price', this.newItem.price.toString());
+    formData.append('price', (this.newItem.price ?? 0).toString());
     formData.append('currency', this.newItem.currencyType);
     formData.append('image', this.newItem.image);
     formData.append('user_id', this.user.id);
 
-    console.log('Posting Item...', this.newItem);
-    this.resetForm();
-    // You'll need to use Bootstrap JS or a ViewChild to close the modal programmatically
+    this.itemService.postItem(formData).subscribe({
+      next: (res) => {
+        if (res.status === 'success') {
+          alert("Impeccable! Your item is now live.");
+          this.resetForm();
+          this.loadMarketplace(); // Refresh the grid automatically
+        } else {
+          alert("Upload issue: " + res.message);
+        }
+      },
+      error: (err) => alert("Upload failed. Check your PHP connection.")
+    });
   }
 
-  /**
-   * Helper to format price in the template
-   * Usage in HTML: {{ getFormattedPrice(item.price, item.currencyType) }}
-   */
   getFormattedPrice(price: number | null, type: string): string {
     if (price === null) return '';
     return type === 'dollars' ? `$${price}` : `${price}`;
