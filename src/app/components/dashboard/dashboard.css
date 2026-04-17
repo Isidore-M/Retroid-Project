@@ -1,21 +1,414 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+/* Container logic */
+
+
+
+.dashboard-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px 5%; /* 5% padding on left/right creates that flexible white space */
+  background-color: #ffffff;
+  box-sizing: border-box;
+}
+
+/* Nav Styles */
+.custom-nav {
+  padding: 15px 0;
+  background: transparent;
+}
+.nav-logo { height: 24px; margin-right: 10px; }
+.logo-text { font-weight: 800; font-size: 1.2rem; letter-spacing: -1px; }
+
+.user-pill {
+  background: #f9f9f9;
+  padding: 6px 6px 6px 20px;
+  transition: all 0.2s ease;
+  border: 1px solid #dddcdc;
+}
+
+.user-pill-container:hover .user-pill {
+  background-color: #ffd99c; /* Slight darken on hover */
+  transform: translateY(-1px);
+}
+.welcome-text { font-size: 0.8rem; font-weight: bold; }
+.xp-text { color: #f3a04b; font-size: 0.75rem; font-weight: bold; }
+.nav-avatar {
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: #eee; /* Shows a grey box if image fails */
+}
+.nav-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #333;
+  padding: 5px;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: #f3a04b;
+}
+#hey{
+  font-weight: 400;
+
+}
+/* Notification Dot */
+.notif-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff4d4d;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.xp-text {
+  color: #f3a04b;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+/* Hero Banner */
 .hero-banner {
-    background-color: #88C45D; /* That specific green from your image */
-    min-height: 300px;
+  position: relative;
+  height: 400px;
+  border-radius: 0; /* Or slight radius if you prefer */
+  overflow: hidden;
+  background-color: #7BC367; /* The green in your image */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  color: #1a1a1a;
+}
+.hero-img {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  object-fit: cover;
+}
+.pixel-font { font-family: 'Press Start 2P', cursive; font-size: 2.5rem; }
+
+/* Filter Buttons */
+.filter-btn {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px 25px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  transition: 0.2s;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: #eee;
+  border-color: #000;
 }
 
-.pixel-font { font-family: 'Press Start 2P', cursive; }
-
-.points-badge {
-    background-color: #fff;
-    border: 2px solid #000;
-    padding: 5px 15px;
-    font-weight: bold;
-    color: #f3a04b;
+/* Search Bar */
+.search-container { display: flex; width: 400px; }
+.search-input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-right: none;
+  padding: 8px 20px;
+  outline: none;
+}
+.search-btn {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 0 15px;
 }
 
-.avatar-sm {
-    width: 40px;
-    height: 40px;
-    border: 2px solid #000;
-    border-radius: 5px;
+/* Item Grid */
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+.card-img-box {
+  aspect-ratio: 1/1;
+  background: #eee;
+  overflow: hidden;
+}
+.card-img-box img { width: 100%; height: 100%; object-fit: cover; }
+.item-name { font-size: 0.7rem; color: #333; }
+.item-cat { font-size: 0.7rem; color: #999; }
+.item-price { font-size: 0.7rem; color: #f3a04b; font-weight: bold; }
+
+
+/* 5. Most Popular Grid */
+.popular-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 larger columns */
+  gap: 25px;
+  width: 100%;
+}
+
+.popular-card {
+  background: #fcfcfc;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.popular-card:hover {
+  transform: translateY(-5px);
+}
+
+.popular-img-box {
+  width: 100%;
+  aspect-ratio: 16 / 10; /* Wider aspect ratio for popular items */
+  background-color: #eee;
+  overflow: hidden;
+}
+
+.popular-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Item details styling */
+.pop-item-name {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.pop-meta {
+  font-size: 0.75rem;
+  color: #777;
+  margin-top: 4px;
+}
+
+.dot-separator {
+  margin: 0 8px;
+  color: #ccc;
+}
+
+/* Like Section */
+.like-container {
+  background: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #efefef;
+}
+
+.heart-icon {
+  color: #ff4d4d; /* Bright retro red */
+  margin-right: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.like-count {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* View All Links */
+.section-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.view-all {
+  color: #888;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.view-all:hover {
+  color: #f3a04b;
+}
+
+
+/* Modal Customization */
+.retro-modal {
+  border-radius: 0;
+  border: 2px solid #000;
+  padding: 20px;
+}
+
+.pixel-text-sm {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9rem;
+}
+
+/* Image Upload Box */
+.image-upload-box {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.image-upload-box:hover {
+  border-color: #f3a04b;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Form Inputs */
+.retro-input {
+  width: 100%;
+  padding: 12px 20px;
+  border: 1px solid #eee;
+  border-radius: 30px 0 0 30px; /* Matching your theme */
+  outline: none;
+  background: #fcfcfc;
+}
+
+.retro-input:focus {
+  border-color: #f3a04b;
+}
+
+/* Post Button */
+.btn-pixel-post {
+  background: #f3a04b;
+  border: 3px solid #000;
+  font-family: 'Press Start 2P', cursive;
+  padding: 10px;
+  box-shadow: 0 4px 0 #000;
+  transition: transform 0.1s;
+}
+
+.btn-pixel-post:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+
+/* Trigger Button Styling */
+.btn-pixel-plus {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-right: 20px;
+}
+
+.currency-select {
+  border: 1px solid #eee;
+  background: #f1f1f1;
+  padding: 0 15px;
+  border-radius: 0 30px 30px 0; /* Rounded on the RIGHT to fit against the input */
+  font-weight: bold;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.price-tag {
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #f3a04b; /* XP Orange */
+}
+
+.text-success {
+  color: #28a745 !important; /* Standard Dollar Green */
+}
+/* Update the currency toggle to match the retro-input style */
+.currency-toggle {
+  background-color: #eee;
+  border: 2px solid #000;
+  border-left: none; /* Merges it with the price input */
+  padding: 0 15px;
+  font-family: var(--main-font);
+  font-weight: bold;
+  border-radius: 0 40px 40px 0; /* Only rounds the right side */
+  cursor: pointer;
+  outline: none;
+}
+
+.currency-toggle:focus {
+  background-color: #fff;
+}
+
+/* Ensure XP and Dollar labels use the retro colors */
+.xp-text, .item-price {
+  font-family: var(--main-font); /* Pixel font is too hard to read for small numbers */
+  font-weight: 800;
+  color: var(--retro-orange);
+}
+/* Ensure the coin icon doesn't grow too large */
+.coin-icon {
+  width: 18px; /* Fixed small size to match text */
+  height: 18px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-top: -2px; /* Pulls it up to align with text baseline */
+}
+.item-price, .pop-price, .xp-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* Logout Button Styling */
+.btn-logout {
+  background-color: #000;
+  color: #fff;
+  border: 2px solid #000;
+  padding: 5px 12px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  /* Font size is handled by global styles, but we ensure it stays compact */
+  font-size: 8px !important;
+  text-transform: uppercase;
+}
+
+.btn-logout:hover {
+  background-color: #ff4d4d; /* Turns red on hover for warning */
+  border-color: #ff4d4d;
+}
+
+.btn-logout i {
+  font-size: 14px;
+}
+
+/* Ensure icons in nav don't jump around */
+.nav-icons {
+  gap: 10px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  color: #333;
+}
+
+.icon-btn:hover {
+  color: #f3a04b;
 }

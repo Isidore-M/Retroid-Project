@@ -21,15 +21,29 @@
                  (click)="selectAvatar(id)"
                  [class.selected]="registerData.avatar_id === id"
                  class="avatar-item">
-              <img [src]="'/avatars/' + id + '.jpg'" alt="Avatar Option">
+              <img [src]="'/avatars/' + id + '.jpeg'" alt="Avatar Option">
             </div>
           </div>
 
           <div class="inputs-container">
-            <input type="text" [(ngModel)]="registerData.username" placeholder="Choose pseudo" class="retro-pill-input">
-            <input type="password" [(ngModel)]="registerData.password" placeholder="Password" class="retro-pill-input">
-            <input type="password" [(ngModel)]="registerData.confirmPassword" placeholder="Confirm Password" class="retro-pill-input">
-          </div>
+  <div class="input-wrapper">
+    <input type="text" [(ngModel)]="registerData.username" placeholder="Choose pseudo"
+           [class.input-error]="errors.username" class="retro-pill-input">
+    <p class="error-msg" *ngIf="errors.username">{{ errors.username }}</p>
+  </div>
+
+  <div class="input-wrapper">
+    <input type="password" [(ngModel)]="registerData.password" placeholder="Password"
+           [class.input-error]="errors.password" class="retro-pill-input">
+    <p class="error-msg" *ngIf="errors.password">{{ errors.password }}</p>
+  </div>
+
+  <div class="input-wrapper">
+    <input type="password" [(ngModel)]="registerData.confirmPassword" placeholder="Confirm Password"
+           [class.input-error]="errors.confirmPassword" class="retro-pill-input">
+    <p class="error-msg" *ngIf="errors.confirmPassword">{{ errors.confirmPassword }}</p>
+  </div>
+</div>
 
           <button (click)="onRegister()" class="btn-pixel-enter">Enter</button>
 

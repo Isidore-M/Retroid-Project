@@ -1,4 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+*{
+
+  font-family:'Press Start 2P', cursive;
+}
 
 /* 1. Page Wrapper to center the card */
 .page-container {
@@ -31,7 +35,7 @@
   width: 90%;
   max-width: 1250px;
   height: 80vh;
-  border: 1px solid #e8e8e8; 
+  border: 1px solid #e8e8e8;
   background: white;
   overflow: hidden;
 }
@@ -119,3 +123,28 @@
 }
 
 .login-prompt a { color: #f3a04b; font-weight: bold; text-decoration: none; }
+.input-wrapper {
+  margin-bottom: 15px; /* Space between the input groups */
+  text-align: left;    /* Align error text to the left */
+}
+
+/* The error text */
+.error-msg {
+  color: #ff4d4d;
+  font-size: 0.75rem;
+  margin-top: -10px;    /* Pull it closer to the input */
+  margin-bottom: 10px;
+  margin-left: 25px;    /* Align with the start of the pill text */
+  font-weight: bold;
+}
+
+/* Optional: Highlight the border in red when there's an error */
+.retro-pill-input.input-error {
+  border-color: #ff4d4d !important;
+  background-color: #fff8f8;
+}
+
+/* Adjust the input margin since wrapper handles spacing now */
+.retro-pill-input {
+  margin-bottom: 12px;
+}

@@ -1,0 +1,73 @@
+/* Import the Retro Pixel Font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --retro-font: 'Press Start 2P', cursive;
+  --retro-orange: #f3a04b;
+  --retro-black: #1a1a1a;
+}
+
+/* 1. Global Reset: Force the font on EVERYTHING */
+*, *::before, *::after {
+  font-family: var(--retro-font) !important;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #ffffff;
+  color: var(--retro-black);
+  margin: 0;
+  font-size: 12px; /* Base size for the platform */
+  line-height: 1.4;
+}
+
+/* 2. Headings: Keep them punchy but controlled */
+h1, h2, h3, h4, .section-title {
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  margin-bottom: 1rem;
+}
+
+/* 3. Global Form Elements: Inputs and Buttons often ignore inheritance */
+button, input, select, textarea {
+  font-family: var(--retro-font) !important;
+  font-size: 10px !important; /* Slightly smaller to fit inside inputs */
+}
+
+/* 4. Coin Icon & Currency Alignment */
+.coin-icon {
+  width: 14px; /* Scaled down to match pixel text height */
+  height: 14px;
+  display: inline-block;
+  image-rendering: pixelated;
+  vertical-align: middle;
+}
+
+.xp-text, .item-price, .pop-price {
+  display: inline-flex; /* Use inline-flex to keep icons from jumping to next line */
+  align-items: center;
+  gap: 6px;
+  font-size: 10px; /* Crucial for fitting in small cards */
+}
+
+/* 5. Nav & Card Specific Text Polish */
+.welcome-text, .item-name, .pop-item-name {
+  font-size: 9px; /* Pixel fonts are wide; smaller sizes prevent overflow */
+  text-transform: uppercase;
+}
+
+.posted-by, .pop-meta, .item-cat {
+  font-size: 8px;
+  color: #888;
+}
+
+/* 6. Navigation Avatar Fix */
+.nav-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: #eee; /* Fallback color */
+  border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}

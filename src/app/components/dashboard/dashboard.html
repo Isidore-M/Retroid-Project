@@ -1,31 +1,177 @@
-<div class="dashboard-container">
-  <header class="d-flex justify-content-between align-items-center p-3 bg-white border-bottom shadow-sm">
-  <div class="logo">
-     <img src="assets/logo-black.png" alt="Retroid" height="30">
+<div class="dashboard-wrapper">
+<nav class="custom-nav d-flex justify-content-between align-items-center">
+  <div class="nav-left">
+    <img src="/logo-black.jpg" alt="Retroid" class="nav-logo">
+    <span class="logo-text">Retroid</span>
   </div>
 
-  <div class="user-info d-flex align-items-center">
-    <span class="me-3">Hey <strong>{{ user?.username }}</strong></span>
-    <span class="points-badge me-3">{{ user?.points }} XP</span>
+  <div class="nav-right d-flex align-items-center">
 
-    <button (click)="logout()" class="btn btn-outline-danger btn-sm rounded-pill me-3">
-      Logout
+    <button class="btn-pixel-plus me-3" data-bs-toggle="modal" data-bs-target="#postItemModal">
+      <i class="bi bi-plus-lg"></i> Post an Item
     </button>
 
-    <img [src]="'/avatars/' + user?.avatar_id + '.jpg'" class="avatar-sm" alt="Avatar">
-  </div>
-</header>
+    <div class="user-pill-container" routerLink="/profile" style="cursor: pointer;">
+      <div class="user-pill d-flex align-items-center">
+        <div class="user-meta text-end me-3">
+          <span class="welcome-text d-block"><span id="hey">Hey</span> {{ user?.username }}</span>
+          <span class="xp-text d-flex align-items-center justify-content-end">
+            {{ user?.points }}
+            <img src="/coin.svg" class="coin-icon ms-1" alt="coins">
+          </span>
+        </div>
+        <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'"
+             class="nav-avatar"
+             (error)="$any($event.target).src='/avatars/1.jpeg'"
+             alt="User">
+      </div>
+    </div>
 
-  <div class="hero-banner p-5 text-center">
-    <h1 class="pixel-font text-dark">Loremp ipsum dolor</h1>
-    <p class="w-50 mx-auto">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt...</p>
+    <div class="nav-icons ms-4 d-flex align-items-center">
+      <button class="icon-btn"><i class="bi bi-sliders"></i></button>
 
-    <div class="monitor-row d-flex justify-content-center gap-4 mt-4">
-       <img src="assets/monitor-icon.png" height="100" *ngFor="let i of [1,2,3]">
+      <button class="icon-btn position-relative me-2">
+        <i class="bi bi-bell"></i>
+        <span class="notif-dot"></span>
+      </button>
+
+      <button class="btn-logout ms-2" (click)="logout()">
+        <i class="bi bi-power"></i>
+        <span class="logout-text ms-1">Exit</span>
+      </button>
     </div>
   </div>
+</nav>
 
-  <div class="container mt-4">
-    <h3 class="pixel-font-sm">The bidding room</h3>
+  <section class="hero-banner">
+    <div class="hero-content text-center">
+      <h1 class="pixel-font">Lorem ipsum dolor</h1>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed <br>
+         do eiusmod tempor incididunt ut labore et dolore magna <br>
+         aliqua. Ut enim ad minim veniam.</p>
     </div>
+    <img src="/hero-background.jpg" class="hero-img" alt="Hero background">
+  </section>
+
+  <section class="bidding-room mt-5">
+    <div class="section-header d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title">The bidding room</h2>
+      <a href="#" class="view-all">View all ></a>
+    </div>
+
+    <div class="item-grid">
+      <div class="item-card-mini" *ngFor="let item of biddingItems">
+        <div class="card-img-box">
+          <img [src]="'/items/item-' + item.id + '.jpg'" alt="Item">
+        </div>
+       <div class="card-info d-flex justify-content-between align-items-center mt-2">
+          <span class="item-name text-truncate" style="max-width: 80px;">{{ item.name }}</span>
+          <span class="item-cat text-muted" style="font-size: 0.7rem;">{{ item.category }}</span>
+          <span class="item-price">
+            <strong>{{ item.price }}</strong>
+            <img src="/coin.svg" class="coin-icon" alt="coins">
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="action-bar d-flex justify-content-between align-items-center mt-5">
+    <div class="filter-buttons d-flex gap-2">
+      <button class="filter-btn active">Games</button>
+      <button class="filter-btn">Consoles</button>
+      <button class="filter-btn">Collectibles</button>
+      <button class="filter-btn">Others</button>
+    </div>
+
+    <div class="search-container">
+      <input type="text" placeholder="Search for an item" class="search-input">
+      <button class="search-btn"><i class="bi bi-search"></i></button>
+    </div>
+  </section>
+
+  <section class="most-popular mt-5">
+    <div class="section-header d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title">Most popular</h2>
+      <a href="#" class="view-all">View all ></a>
+    </div>
+
+    <div class="popular-grid">
+      <div class="popular-card" *ngFor="let item of popularItems">
+        <div class="popular-img-box">
+          <img [src]="'/items/popular-' + item.id + '.jpg'" alt="Popular Item">
+        </div>
+
+        <div class="popular-footer d-flex justify-content-between align-items-center p-3">
+          <div class="item-details">
+            <h3 class="pop-item-name">{{ item.name }}</h3>
+            <div class="pop-meta d-flex align-items-center">
+  <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
+  <span class="dot-separator mx-2">•</span>
+  <span class="pop-price">
+    <ng-container *ngIf="item.currencyType === 'dollars'">${{ item.price }}</ng-container>
+    <ng-container *ngIf="item.currencyType === 'points'">
+      {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
+    </ng-container>
+  </span>
+</div>
+          </div>
+
+          <div class="like-container d-flex align-items-center">
+            <i class="bi bi-heart-fill heart-icon"></i>
+            <span class="like-count">{{ item.likes }} likes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="modal fade" id="postItemModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content retro-modal">
+
+      <div class="modal-header border-0">
+        <h5 class="modal-title pixel-text-sm">List new item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="resetForm()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="post-form">
+          <div class="image-upload-box mb-4" (click)="fileInput.click()">
+            <input type="file" #fileInput hidden (change)="onFileSelected($event)">
+            <div *ngIf="!imagePreview" class="upload-placeholder text-center">
+              <i class="bi bi-cloud-arrow-up fs-1"></i>
+              <p class="mt-2">Click to upload item image</p>
+            </div>
+            <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img">
+          </div>
+
+          <div class="input-group-custom mb-3">
+            <input type="text" [(ngModel)]="newItem.name" placeholder="Item name" class="retro-input">
+          </div>
+
+          <div class="input-group-custom mb-3">
+            <select [(ngModel)]="newItem.category" class="retro-input">
+              <option value="" disabled selected>Select Category</option>
+              <option value="Games">Games</option>
+              <option value="Consoles">Consoles</option>
+              <option value="Collectibles">Collectibles</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div class="input-group-custom mb-4 d-flex gap-0">
+            <input type="number" [(ngModel)]="newItem.price" placeholder="Value" class="retro-input flex-grow-1">
+            <select [(ngModel)]="newItem.currencyType" class="currency-toggle">
+              <option value="points">XP</option>
+              <option value="dollars">$</option>
+            </select>
+          </div>
+
+          <button class="btn-pixel-post w-100" (click)="submitItem()">List Item</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
