@@ -73,19 +73,70 @@ ngOnInit() {
   }
 }
 
-  loadMarketplace() {
-    this.itemService.getItems(this.user.id).subscribe({
-      next: (data) => {
-        this.allMarketplaceItems = data.map(item => ({
-          ...item,
-          isLiked: item.is_liked == 1
-        })).sort((a, b) => b.id - a.id);
+  // loadMarketplace() {
+  //   this.itemService.getItems(this.user.id).subscribe({
+  //     next: (data) => {
+  //       this.allMarketplaceItems = data.map(item => ({
+  //         ...item,
+  //         isLiked: item.is_liked == 1
+  //       })).sort((a, b) => b.id - a.id);
 
-        this.applyFilters();
-      },
-      error: (err) => console.error("Error loading items:", err)
-    });
-  }
+  //       this.applyFilters();
+  //     },
+  //     error: (err) => console.error("Error loading items:", err)
+  //   });
+  // }
+
+  loadMarketplace() {
+  // 1. Load Regular Marketplace Items
+  this.itemService.getItems(this.user.id).subscribe({
+    next: (data) => {
+      console.log("Marketplace Raw Data:", data); // Check F12 Console for this!
+
+      if (!data || !Array.isArray(data)) {
+        console.warn("Marketplace returned empty or invalid data.");
+        this.allMarketplaceItems = [];
+      } else {
+        // Filter and Map with extra safety
+        this.allMarketplaceItems = data
+          .filter((item: any) => {
+            // If is_bidding is null/undefined, treat it as a regular item (0)
+            const isBiddingValue = item.is_bidding !== undefined && item.is_bidding !== null
+                                   ? Number(item.is_bidding)
+                                   : 0;
+            return isBiddingValue === 0;
+          })
+          .map((item: any) => ({
+            ...item,
+            isLiked: item.is_liked == 1,
+            // Fallback for missing image_path to prevent broken UI
+            image_path: item.image_path || 'placeholder.jpg'
+          }));
+      }
+
+      this.applyFilters();
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error("Critical error fetching marketplace items:", err);
+      this.allMarketplaceItems = [];
+      this.applyFilters();
+    }
+  });
+
+  // 2. Load Bidding Room Artifacts
+  this.itemService.getBiddingItems().subscribe({
+    next: (data) => {
+      console.log("Bidding Items Raw Data:", data);
+      this.biddingItems = Array.isArray(data) ? data : [];
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error("Critical error fetching bidding artifacts:", err);
+      this.biddingItems = [];
+    }
+  });
+}
 
   setCategory(category: string) {
     this.activeCategory = category;

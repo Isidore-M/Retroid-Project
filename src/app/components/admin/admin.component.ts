@@ -1,12 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router'; // Added for the 'Exit to Market' link
 import { ItemService } from '../../services/item';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule], // Added RouterModule
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css']
 })
@@ -18,6 +19,7 @@ export class AdminComponent implements OnInit {
   // Data Arrays
   users: any[] = [];
   allItems: any[] = [];
+  biddingItems: any[] = []; // Array specifically for the bidding management view
 
   // Model for adding to Bidding Room
   newArtifact: any = {
@@ -32,7 +34,7 @@ export class AdminComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Get current admin details
+    // Get current admin details from session
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.adminUser = JSON.parse(savedUser);
@@ -46,10 +48,14 @@ export class AdminComponent implements OnInit {
    */
   loadAllData() {
     this.itemService.getAdminOversight().subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.status === 'success') {
           this.users = res.data.users;
           this.allItems = res.data.items;
+
+          // Filter items that are currently in the bidding room for the management tab
+          this.biddingItems = this.allItems.filter(item => item.is_bidding == 1);
+
           this.cdr.detectChanges();
         }
       },
@@ -57,55 +63,50 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  /**
-   * Switches tabs and refreshes data if needed
-   */
   setTab(tab: 'users' | 'market' | 'bidding') {
     this.activeTab = tab;
-    this.loadAllData(); // Refresh data whenever we switch tabs
+    // We don't always need to refresh the whole DB on tab switch,
+    // but it ensures the Admin always sees real-time data.
+    this.loadAllData();
   }
 
   /**
-   * Drops the Ban Hammer
+   * Ban Hammer Logic
    */
   blockUser(user: any) {
-  const reason = prompt(`Why are you blocking ${user.username}?`);
+    const reason = prompt(`Why are you blocking ${user.username}?`);
 
-  if (reason !== null && reason.trim() !== '') {
-    this.itemService.blockUser(user.id, reason).subscribe({
-      next: (res: any) => { // Fixed: Explicitly typed 'res'
-        if (res.status === 'success') {
-          user.status = 'blocked';
-          user.block_reason = reason;
-          this.cdr.detectChanges();
-        }
-      },
-      error: () => alert("Failed to drop the hammer.") // Fixed: Removed unused 'err'
-    });
+    if (reason !== null && reason.trim() !== '') {
+      this.itemService.blockUser(user.id, reason).subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') {
+            user.status = 'blocked';
+            user.block_reason = reason;
+            alert(`${user.username} has been restricted.`);
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => alert("System error: The hammer failed to drop.")
+      });
+    }
   }
-}
 
-  /**
-   * Restores a user's access
-   */
   unblockUser(user: any) {
-  if (confirm(`Are you sure you want to unblock ${user.username}?`)) {
-    this.itemService.unblockUser(user.id).subscribe({
-      next: (res: any) => { // Fixed: Explicitly typed 'res'
-        if (res.status === 'success') {
-          user.status = 'active';
-          user.block_reason = null;
-          this.cdr.detectChanges();
-        }
-      },
-      error: () => alert("Could not unblock user.") // Fixed: Removed unused 'err'
-    });
+    if (confirm(`Restore access for ${user.username}?`)) {
+      this.itemService.unblockUser(user.id).subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') {
+            user.status = 'active';
+            user.block_reason = null;
+            alert(`Access restored for ${user.username}.`);
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => alert("Could not communicate with the security server.")
+      });
+    }
   }
-}
 
-  /**
-   * Handles image selection for the Bidding Room Artifact
-   */
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -118,30 +119,42 @@ export class AdminComponent implements OnInit {
    */
   postArtifact() {
     if (!this.newArtifact.name || !this.newArtifact.price || !this.newArtifact.image) {
-      alert("Please fill all artifact details including the image.");
+      alert("Artifact blueprints incomplete! Name, price, and image required.");
       return;
     }
 
     const formData = new FormData();
     formData.append('name', this.newArtifact.name);
     formData.append('price', this.newArtifact.price.toString());
+    formData.append('category', 'Artifact');
     formData.append('image', this.newArtifact.image);
-    formData.append('user_id', this.adminUser.id); // Set the admin as the creator
-    formData.append('is_bidding', '1'); // Crucial flag for bidding room logic
+    formData.append('user_id', this.adminUser.id);
+    formData.append('is_bidding', '1'); // Routes it to the bidding room
 
     this.itemService.postItem(formData).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.status === 'success') {
-          alert("Artifact deployed to the Bidding Room!");
+          alert("DEPLOYMENT SUCCESSFUL: Artifact is now live in the Bidding Room.");
           this.resetArtifactForm();
-          this.loadAllData();
+          this.loadAllData(); // Refresh list to show new artifact
         }
       },
-      error: (err) => console.error("Artifact deployment failed:", err)
+      error: (err) => alert("Deployment failed. Check server logs.")
     });
   }
 
   private resetArtifactForm() {
     this.newArtifact = { name: '', price: null, image: null };
+    // Clear the file input manually if needed
+  }
+
+  /**
+   * Admin-only deletion for marketplace oversight
+   */
+  deleteItem(itemId: number) {
+    if (confirm("Permanently delete this marketplace listing?")) {
+      // You can implement this in your ItemService later
+      console.log("Deleting item:", itemId);
+    }
   }
 }

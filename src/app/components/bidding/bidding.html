@@ -1,0 +1,24 @@
+<div class="bidding-container">
+  <div class="bidding-header">
+    <h1 class="pixel-font">LIVE AUCTION ROOM</h1>
+    <p class="xp-balance">Your Balance: {{ user.points }} <img src="/coin.svg" width="16"></p>
+  </div>
+
+  <div class="artifact-grid">
+    <div class="artifact-card" *ngFor="let art of artifacts">
+      <div class="timer-tag">Ends in: 04:22:10</div>
+      <img [src]="'http://localhost/retroid/public/items/' + art.image_path" class="art-img">
+
+      <div class="art-info">
+        <h3>{{ art.name }}</h3>
+        <p class="current-price">Current Bid: <strong>{{ art.current_bid || art.price }}</strong> XP</p>
+        <p class="top-bidder">Highest Bidder: {{ art.highest_bidder || 'No bids yet' }}</p>
+
+        <div class="bid-input-group">
+          <input type="number" #bidAmount [placeholder]="(art.current_bid || art.price) + 10">
+          <button (click)="placeBid(art, +bidAmount.value)">PLACE BID</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

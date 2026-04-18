@@ -1,5 +1,4 @@
 <div class="dashboard-wrapper">
-
   <nav class="custom-nav d-flex justify-content-between align-items-center">
     <div class="nav-left d-flex align-items-center">
       <img src="/logo.svg" alt="Retroid" class="nav-logo">
@@ -38,12 +37,10 @@
 
       <div class="nav-icons ms-4 d-flex align-items-center">
         <button class="icon-btn"><i class="bi bi-sliders"></i></button>
-
         <button class="icon-btn position-relative me-2">
           <i class="bi bi-bell"></i>
           <span class="notif-dot"></span>
         </button>
-
         <button class="btn-logout ms-2" (click)="logout()">
           <i class="bi bi-power"></i>
           <span class="logout-text ms-1">Exit</span>
@@ -65,21 +62,28 @@
       <a href="#" class="view-all">View all ></a>
     </div>
 
-    <div class="item-grid">
+    <div class="item-grid" *ngIf="biddingItems && biddingItems.length > 0; else noArtifacts">
       <div class="item-card-mini" *ngFor="let item of biddingItems">
         <div class="card-img-box">
-          <img [src]="'/items/item-' + item.id + '.jpg'" alt="Item">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+               [alt]="item.name"
+               (error)="$any($event.target).src='/assets/placeholder.jpg'">
         </div>
         <div class="card-info d-flex justify-content-between align-items-center mt-2">
           <span class="item-name text-truncate" style="max-width: 80px;">{{ item.name }}</span>
           <span class="item-cat text-muted" style="font-size: 0.7rem;">{{ item.category }}</span>
           <span class="item-price">
-            <strong>{{ item.price }}</strong>
+            <strong>{{ item.current_bid || item.price }}</strong>
             <img src="/coin.svg" class="coin-icon" alt="coins">
           </span>
         </div>
       </div>
     </div>
+    <ng-template #noArtifacts>
+      <div class="text-center p-4 border-dashed rounded">
+        <p class="text-muted mb-0">No active bidding artifacts found.</p>
+      </div>
+    </ng-template>
   </section>
 
   <section class="action-bar d-flex justify-content-between align-items-center mt-5">
@@ -107,10 +111,12 @@
       <a href="#" class="view-all">View all ></a>
     </div>
 
-    <div class="popular-grid" *ngIf="marketplaceItems.length > 0">
+    <div class="popular-grid" *ngIf="marketplaceItems.length > 0; else noMarket">
       <div class="popular-card" *ngFor="let item of marketplaceItems">
         <div class="popular-img-box">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+               [alt]="item.name"
+               (error)="$any($event.target).src='/assets/placeholder.jpg'">
         </div>
 
         <div class="popular-footer d-flex justify-content-between align-items-center p-3">
@@ -139,13 +145,15 @@
       </div>
     </div>
 
-    <div class="empty-state-container" *ngIf="marketplaceItems.length === 0">
-      <div class="d-flex flex-column justify-content-center align-items-center text-center">
-        <i class="bi bi-controller fs-1 text-muted mb-3"></i>
-        <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
-        <p class="text-muted">There are currently no items matching this category.</p>
+    <ng-template #noMarket>
+      <div class="empty-state-container">
+        <div class="d-flex flex-column justify-content-center align-items-center text-center">
+          <i class="bi bi-controller fs-1 text-muted mb-3"></i>
+          <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
+          <p class="text-muted">Try changing your filters or searching for something else.</p>
+        </div>
       </div>
-    </div>
+    </ng-template>
   </section>
 </div>
 
@@ -156,7 +164,6 @@
         <h5 class="modal-title pixel-text-sm">List new item</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="resetForm()"></button>
       </div>
-
       <div class="modal-body">
         <div class="post-form">
           <div class="image-upload-box mb-4" (click)="fileInput.click()">
@@ -167,11 +174,9 @@
             </div>
             <img *ngIf="imagePreview" [src]="imagePreview" class="preview-img">
           </div>
-
           <div class="input-group-custom mb-3">
             <input type="text" [(ngModel)]="newItem.name" placeholder="Item name" class="retro-input">
           </div>
-
           <div class="input-group-custom mb-3">
             <select [(ngModel)]="newItem.category" class="retro-input">
               <option value="" disabled selected>Select Category</option>
@@ -181,7 +186,6 @@
               <option value="Others">Others</option>
             </select>
           </div>
-
           <div class="input-group-custom mb-4 d-flex gap-0">
             <input type="number" [(ngModel)]="newItem.price" placeholder="Value" class="retro-input flex-grow-1">
             <select [(ngModel)]="newItem.currencyType" class="currency-toggle">
@@ -189,7 +193,6 @@
               <option value="dollars">$</option>
             </select>
           </div>
-
           <button class="btn-pixel-post w-100" (click)="submitItem()">List Item</button>
         </div>
       </div>

@@ -17,15 +17,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once dirname(__FILE__) . '/../config/database.php';
 
+// Grab the user ID from the URL parameter (Angular is sending ?user_id=X)
+$current_user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+
 try {
-    // 3. Fetch items and join with user table to get the username
-    $query = "SELECT items.*, users.username
-              FROM items
-              JOIN users ON items.user_id = users.id
-              ORDER BY items.id DESC"; // Newest items first
+    /**
+     * UPDATED QUERY:
+     * 1. Fetches all item details
+     * 2. Joins with users to get the seller's username
+     * 3. Sub-query counts total likes for each item
+     * 4. EXISTS check determines if the logged-in user has liked the item
+     * 5. Includes is_bidding to ensure the frontend filter works
+     */
+    $query = "SELECT i.*, u.username,
+              (SELECT COUNT(*) FROM item_likes WHERE item_id = i.id) as likes,
+              EXISTS(SELECT 1 FROM item_likes WHERE item_id = i.id AND user_id = :uid) as is_liked
+              FROM items i
+              JOIN users u ON i.user_id = u.id
+              ORDER BY i.id DESC";
 
     $stmt = $conn->prepare($query);
-    $stmt->execute();
+
+    // Fixed: Ensure the key ':uid' matches the placeholder in the query above
+    $stmt->execute(['uid' => $current_user_id]);
+
     $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // 4. Output clean JSON
@@ -35,19 +50,7 @@ try {
 } catch (PDOException $e) {
     ob_end_clean();
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+    // This will now tell you exactly which column is missing if it fails
+    echo json_encode(["status" => "error", "message" => "Database Error: " . $e->getMessage()]);
 }
-// Grab the user ID from the URL parameter
-$current_user_id = $_GET['user_id'] ?? 0;
-
-// Use a sub-query to check if this specific user liked the item
-$query = "SELECT items.*, users.username,
-          EXISTS(SELECT 1 FROM item_likes WHERE item_likes.item_id = items.id AND item_likes.user_id = :uid) as is_liked
-          FROM items
-          JOIN users ON items.user_id = users.id
-          ORDER BY items.id DESC";
-
-$stmt = $conn->prepare($query);
-// Bind the user ID so the query knows who is asking
-$stmt->execute(['uid' => $current_user_id]);
-$items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>

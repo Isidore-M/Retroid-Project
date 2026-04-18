@@ -21,14 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $currency = $_POST['currency'] ?? 'points';
     $user_id = $_POST['user_id'] ?? null;
 
+    // NEW: Capture the is_bidding flag (defaults to 0 for regular users)
+    $is_bidding = isset($_POST['is_bidding']) ? (int)$_POST['is_bidding'] : 0;
+
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
 
-        // 1. IMPROVED PATH LOGIC
-        // We go up one level from 'api' to root, then into 'public/items'
         $base_dir = dirname(__DIR__);
         $target_dir = $base_dir . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'items' . DIRECTORY_SEPARATOR;
 
-        // 2. AUTO-CREATE & PERMISSION CHECK
         if (!file_exists($target_dir)) {
             mkdir($target_dir, 0777, true);
         }
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ob_end_clean();
             echo json_encode([
                 "status" => "error",
-                "message" => "Folder is not writable. Manual fix: Right-click 'public' folder > Properties > Uncheck Read-only.",
+                "message" => "Folder is not writable.",
                 "path_attempted" => $target_dir
             ]);
             exit;
@@ -47,20 +47,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $new_filename = 'item_' . time() . '_' . uniqid() . '.' . $file_extension;
         $target_file = $target_dir . $new_filename;
 
-        // 3. ATTEMPT MOVE
         if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
             try {
-                $query = "INSERT INTO items (user_id, name, category, price, currency_type, image_path)
-                          VALUES (:uid, :name, :cat, :price, :curr, :path)";
+                // UPDATED QUERY: Added is_bidding column
+                $query = "INSERT INTO items (user_id, name, category, price, currency_type, image_path, is_bidding)
+                          VALUES (:uid, :name, :cat, :price, :curr, :path, :is_bid)";
 
                 $stmt = $conn->prepare($query);
                 $success = $stmt->execute([
-                    'uid'   => $user_id,
-                    'name'  => $name,
-                    'cat'   => $category,
-                    'price' => $price,
-                    'curr'  => $currency,
-                    'path'  => $new_filename
+                    'uid'    => $user_id,
+                    'name'   => $name,
+                    'cat'    => $category,
+                    'price'  => $price,
+                    'curr'   => $currency,
+                    'path'   => $new_filename,
+                    'is_bid' => $is_bidding // Saves as 1 for Admin Artifacts
                 ]);
 
                 if ($success) {
@@ -79,16 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             ob_end_clean();
-            // Provide more detail if move_uploaded_file fails
             echo json_encode([
                 "status" => "error",
-                "message" => "Could not move file to destination.",
-                "debug_path" => $target_file
+                "message" => "Could not move file to destination."
             ]);
         }
     } else {
         ob_end_clean();
-        $err_msg = isset($_FILES['image']) ? "PHP Upload Error Code: " . $_FILES['image']['error'] : "No file found in request.";
+        $err_msg = isset($_FILES['image']) ? "PHP Error: " . $_FILES['image']['error'] : "No file found.";
         echo json_encode(["status" => "error", "message" => $err_msg]);
     }
 } else {

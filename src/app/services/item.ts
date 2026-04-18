@@ -84,7 +84,7 @@ updateUserInfo(userId: number, username: string): Observable<any> {
 }
 
 getAdminOversight(): Observable<any> {
-  return this.http.get(`${this.apiUrl}/admin_get_all.php`);
+  return this.http.get(`${this.apiUrl}/get_admin_oversight.php`);
 }
 
 // And the block action
@@ -104,5 +104,32 @@ unblockUser(userId: number): Observable<any> {
     user_id: userId
   });
 }
+
+
+
+// Fetch artifacts specifically for the Bidding Room
+getBiddingItems(): Observable<any> {
+  // This will call a PHP script that filters items where is_bidding = 1
+  return this.http.get(`${this.apiUrl}/get_bidding_items.php`);
+}
+
+// Post a new bid to the bids table
+placeBid(itemId: number, userId: number, amount: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/place_bid.php`, {
+    item_id: itemId,
+    user_id: userId,
+    amount: amount
+  });
+}
+
+getAllUsers(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/get_all_users.php`);
+}
+
+
+
+
+
+
 
 }
