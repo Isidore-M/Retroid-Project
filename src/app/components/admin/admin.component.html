@@ -57,41 +57,82 @@
       </table>
     </div>
 
-    <div *ngIf="activeTab === 'bidding'" class="admin-section">
-      <div class="artifact-deploy-box">
-        <h3>Deploy New Artifact</h3>
-        <p class="sub-text">Items posted here will appear in the Bidding Room for users to compete for.</p>
+    <div *ngIf="activeTab === 'market'" class="admin-section">
+      <div class="admin-grid-container" *ngIf="allItems.length > 0; else noMarket">
+        <div class="admin-item-card" *ngFor="let item of allItems">
+          <div class="admin-card-img">
+            <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+                 (error)="$any($event.target).src='/assets/placeholder.jpg'">
+            <span class="admin-badge" [class.bidding-bg]="item.is_bidding == 1">
+              {{ item.is_bidding == 1 ? 'Artifact' : 'Market' }}
+            </span>
+          </div>
 
-        <div class="deploy-form grid-form">
-          <div class="form-group">
-            <label>Artifact Name</label>
-            <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy">
+          <div class="admin-card-body">
+            <h4 class="text-truncate" [title]="item.name">{{ item.name }}</h4>
+            <p class="seller-tag">Seller: <strong>{{ item.owner_name }}</strong></p>
+            <p class="price-tag">
+              {{ item.price }}
+              <img src="/coin.svg" width="12" *ngIf="item.currency_type === 'points'">
+              <span *ngIf="item.currency_type === 'dollars'">$</span>
+            </p>
+
+            <div class="admin-card-actions">
+              <button class="btn-delete-item" (click)="deleteItem(item.id)">
+                <i class="bi bi-trash me-1"></i> Delete Listing
+              </button>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Starting Bid (XP)</label>
-            <input type="number" [(ngModel)]="newArtifact.price" placeholder="500">
-          </div>
-          <div class="form-group">
-            <label>Visual Asset</label>
-            <input type="file" (change)="onFileSelected($event)" class="custom-file-input">
-          </div>
-          <button class="btn-deploy" (click)="postArtifact()">
-            Authorize Deployment
-          </button>
         </div>
       </div>
+      <ng-template #noMarket>
+        <div class="empty-state text-center p-5">
+          <p class="text-muted">No items found in the marketplace database.</p>
+        </div>
+      </ng-template>
     </div>
 
-    <div *ngIf="activeTab === 'market'" class="admin-section">
-      <div class="market-list">
-        <div class="market-item-row" *ngFor="let item of allItems">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" class="admin-item-thumb">
-          <div class="item-info">
-            <h4>{{ item.name }}</h4>
-            <p>Posted by: {{ item.owner_name }}</p>
+    <div *ngIf="activeTab === 'bidding'" class="admin-section">
+      <div class="row">
+        <div class="col-md-5">
+          <div class="artifact-deploy-box">
+            <h3>Deploy New Artifact</h3>
+            <p class="sub-text">Items posted here will appear in the Bidding Room.</p>
+
+            <div class="deploy-form grid-form">
+              <div class="form-group">
+                <label>Artifact Name</label>
+                <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy">
+              </div>
+              <div class="form-group">
+                <label>Starting Bid (XP)</label>
+                <input type="number" [(ngModel)]="newArtifact.price" placeholder="500">
+              </div>
+              <div class="form-group">
+                <label>Visual Asset</label>
+                <input type="file" (change)="onFileSelected($event)" class="custom-file-input">
+              </div>
+              <button class="btn-deploy" (click)="postArtifact()">
+                Authorize Deployment
+              </button>
+            </div>
           </div>
-          <div class="item-actions">
-            <button class="btn-delete-item">Delete Listing</button>
+        </div>
+
+        <div class="col-md-7">
+          <h3 class="pixel-font mb-3" style="font-size: 1.2rem;">Currently Auctioning</h3>
+          <div class="active-bidding-list">
+            <div class="market-item-row" *ngFor="let item of biddingItems">
+              <img [src]="'http://localhost/retroid/public/items/' + item.image_path" class="admin-item-thumb">
+              <div class="item-info">
+                <h4>{{ item.name }}</h4>
+                <p>Current High Bid: <strong>{{ item.current_bid || item.price }} XP</strong></p>
+              </div>
+              <div class="item-actions">
+                <button class="btn-delete-item" (click)="deleteItem(item.id)">Remove</button>
+              </div>
+            </div>
+            <div *ngIf="biddingItems.length === 0" class="text-muted small">No active auctions.</div>
           </div>
         </div>
       </div>
