@@ -22,8 +22,8 @@ if (!empty($decoded['username']) && !empty($decoded['password'])) {
     $user = $decoded['username'];
     $pass = $decoded['password'];
 
-    // Select all fields to ensure we get avatar_id and points
-    $query = "SELECT id, username, password, avatar_id, points FROM users WHERE username = :u LIMIT 1";
+    // UPDATED QUERY: Included status, block_reason, and is_admin
+    $query = "SELECT id, username, password, avatar_id, points, status, block_reason, is_admin FROM users WHERE username = :u LIMIT 1";
     $stmt = $conn->prepare($query);
     $stmt->execute(['u' => $user]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -36,8 +36,11 @@ if (!empty($decoded['username']) && !empty($decoded['password'])) {
             "user" => [
                 "id" => (int)$row['id'],
                 "username" => $row['username'],
-                "avatar_id" => (int)$row['avatar_id'], 
-                "points" => (int)$row['points']
+                "avatar_id" => (int)$row['avatar_id'],
+                "points" => (int)$row['points'],
+                "status" => $row['status'],             // NEW: Needed for blocking logic
+                "block_reason" => $row['block_reason'], // NEW: Needed for block alerts
+                "is_admin" => (int)$row['is_admin']     // NEW: Needed for Admin Panel button
             ]
         ]);
     } else {

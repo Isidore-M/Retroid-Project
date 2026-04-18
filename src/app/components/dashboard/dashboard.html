@@ -1,8 +1,18 @@
 <div class="dashboard-wrapper">
+
   <nav class="custom-nav d-flex justify-content-between align-items-center">
-    <div class="nav-left">
-      <img src="assets/logo-black.jpg" alt="Retroid" class="nav-logo">
-      <span class="logo-text">Retroid</span>
+    <div class="nav-left d-flex align-items-center">
+      <img src="/logo.svg" alt="Retroid" class="nav-logo">
+      <span class="logo-text me-4">Retroid</span>
+
+      <button *ngIf="user?.is_admin == 1 || user?.is_admin == '1'"
+              class="btn-admin-panel d-flex align-items-center"
+              routerLink="/admin">
+        <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon-inline me-2">
+          <path d="M4 1h2v1H4V1zm0 2h2v5H4V4zm0-2h2v1H4V2z" fill="black"/>
+        </svg>
+        Admin Panel
+      </button>
     </div>
 
     <div class="nav-right d-flex align-items-center">
@@ -16,7 +26,7 @@
             <span class="welcome-text d-block"><span id="hey">Hey</span> {{ user?.username }}</span>
             <span class="xp-text d-flex align-items-center justify-content-end">
               {{ user?.points }}
-              <img src="coin.svg" class="coin-icon ms-1" alt="coins">
+              <img src="/coin.svg" class="coin-icon ms-1" alt="coins">
             </span>
           </div>
           <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'"
@@ -43,13 +53,7 @@
   </nav>
 
   <section class="hero-banner">
-    <div class="hero-content text-center">
-      <h1 class="pixel-font">Lorem ipsum dolor</h1>
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed <br>
-         do eiusmod tempor incididunt ut labore et dolore magna <br>
-         aliqua. Ut enim ad minim veniam.</p>
-    </div>
-    <img src="assets/hero-background.jpg" class="hero-img" alt="Hero background">
+    <img src="/banner-hero.jpg" class="hero-img" alt="Hero background">
   </section>
 
   <section class="bidding-room mt-5">
@@ -66,7 +70,7 @@
         <div class="card-img-box">
           <img [src]="'/items/item-' + item.id + '.jpg'" alt="Item">
         </div>
-       <div class="card-info d-flex justify-content-between align-items-center mt-2">
+        <div class="card-info d-flex justify-content-between align-items-center mt-2">
           <span class="item-name text-truncate" style="max-width: 80px;">{{ item.name }}</span>
           <span class="item-cat text-muted" style="font-size: 0.7rem;">{{ item.category }}</span>
           <span class="item-price">
@@ -79,25 +83,25 @@
   </section>
 
   <section class="action-bar d-flex justify-content-between align-items-center mt-5">
-  <div class="filter-buttons d-flex gap-2">
-    <button type="button" class="filter-btn" [class.active]="activeCategory === 'All'" (click)="setCategory('All')">All</button>
-    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Games'" (click)="setCategory('Games')">Games</button>
-    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Consoles'" (click)="setCategory('Consoles')">Consoles</button>
-    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Collectibles'" (click)="setCategory('Collectibles')">Collectibles</button>
-    <button type="button" class="filter-btn" [class.active]="activeCategory === 'Others'" (click)="setCategory('Others')">Others</button>
-  </div>
+    <div class="filter-buttons d-flex gap-2">
+      <button type="button" class="filter-btn" [class.active]="activeCategory === 'All'" (click)="setCategory('All')">All</button>
+      <button type="button" class="filter-btn" [class.active]="activeCategory === 'Games'" (click)="setCategory('Games')">Games</button>
+      <button type="button" class="filter-btn" [class.active]="activeCategory === 'Consoles'" (click)="setCategory('Consoles')">Consoles</button>
+      <button type="button" class="filter-btn" [class.active]="activeCategory === 'Collectibles'" (click)="setCategory('Collectibles')">Collectibles</button>
+      <button type="button" class="filter-btn" [class.active]="activeCategory === 'Others'" (click)="setCategory('Others')">Others</button>
+    </div>
 
-  <div class="search-container">
-    <input type="text"
-           placeholder="Search for an item"
-           class="search-input"
-           [(ngModel)]="searchQuery"
-           (input)="applyFilters()">
-    <button type="button" class="search-btn"><i class="bi bi-search"></i></button>
-  </div>
-</section>
+    <div class="search-container">
+      <input type="text"
+             placeholder="Search for an item"
+             class="search-input"
+             [(ngModel)]="searchQuery"
+             (input)="applyFilters()">
+      <button type="button" class="search-btn"><i class="bi bi-search"></i></button>
+    </div>
+  </section>
 
-<section class="most-popular mt-5">
+  <section class="most-popular mt-5">
     <div class="section-header d-flex justify-content-between align-items-center mb-4">
       <h2 class="section-title">Marketplace</h2>
       <a href="#" class="view-all">View all ></a>
@@ -125,12 +129,12 @@
             </div>
           </div>
 
-                  <div class="like-container d-flex align-items-center" (click)="toggleLike(item)" style="cursor: pointer;">
-          <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
-            <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
-          </svg>
-          <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
-        </div>
+          <div class="like-container d-flex align-items-center" (click)="toggleLike(item)" style="cursor: pointer;">
+            <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
+              <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
+            </svg>
+            <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
+          </div>
         </div>
       </div>
     </div>
@@ -143,13 +147,11 @@
       </div>
     </div>
   </section>
-
 </div>
 
 <div class="modal fade" id="postItemModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content retro-modal">
-
       <div class="modal-header border-0">
         <h5 class="modal-title pixel-text-sm">List new item</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" (click)="resetForm()"></button>

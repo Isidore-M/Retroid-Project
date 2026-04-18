@@ -1,0 +1,101 @@
+<div class="admin-panel-wrapper fade-in">
+  <header class="admin-header d-flex justify-content-between align-items-center">
+    <div class="brand">
+      <h1 class="pixel-font">RETROID CONTROL CENTER</h1>
+      <p class="admin-subtitle">v2.0 // System Oversight</p>
+    </div>
+    <button class="btn-exit-admin" routerLink="/dashboard">
+      Exit to Market
+    </button>
+  </header>
+
+  <nav class="admin-tabs d-flex">
+    <button (click)="setTab('users')" [class.active]="activeTab === 'users'">
+      <i class="bi bi-people-fill me-2"></i> User Control
+    </button>
+    <button (click)="setTab('market')" [class.active]="activeTab === 'market'">
+      <i class="bi bi-shop me-2"></i> Marketplace Oversight
+    </button>
+    <button (click)="setTab('bidding')" [class.active]="activeTab === 'bidding'">
+      <i class="bi bi-hammer me-2"></i> Bidding Management
+    </button>
+  </nav>
+
+  <main class="admin-canvas">
+
+    <div *ngIf="activeTab === 'users'" class="admin-section">
+      <table class="pixel-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Status</th>
+            <th>XP Balance</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+            <td>#{{ u.id }}</td>
+            <td><strong>{{ u.username }}</strong></td>
+            <td>
+              <span class="status-pill" [class.blocked]="u.status === 'blocked'">
+                {{ u.status }}
+              </span>
+            </td>
+            <td>{{ u.points }} <img src="/coin.svg" width="12" alt="XP"></td>
+            <td>
+              <button *ngIf="u.status === 'active'" class="btn-block-action" (click)="blockUser(u)">
+                Ban Hammer
+              </button>
+              <button *ngIf="u.status === 'blocked'" class="btn-restore-action" (click)="unblockUser(u)">
+                Restore Access
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="activeTab === 'bidding'" class="admin-section">
+      <div class="artifact-deploy-box">
+        <h3>Deploy New Artifact</h3>
+        <p class="sub-text">Items posted here will appear in the Bidding Room for users to compete for.</p>
+
+        <div class="deploy-form grid-form">
+          <div class="form-group">
+            <label>Artifact Name</label>
+            <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy">
+          </div>
+          <div class="form-group">
+            <label>Starting Bid (XP)</label>
+            <input type="number" [(ngModel)]="newArtifact.price" placeholder="500">
+          </div>
+          <div class="form-group">
+            <label>Visual Asset</label>
+            <input type="file" (change)="onFileSelected($event)" class="custom-file-input">
+          </div>
+          <button class="btn-deploy" (click)="postArtifact()">
+            Authorize Deployment
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="activeTab === 'market'" class="admin-section">
+      <div class="market-list">
+        <div class="market-item-row" *ngFor="let item of allItems">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" class="admin-item-thumb">
+          <div class="item-info">
+            <h4>{{ item.name }}</h4>
+            <p>Posted by: {{ item.owner_name }}</p>
+          </div>
+          <div class="item-actions">
+            <button class="btn-delete-item">Delete Listing</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>

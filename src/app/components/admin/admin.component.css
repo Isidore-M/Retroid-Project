@@ -1,0 +1,131 @@
+/* ADMIN THEME */
+.admin-panel-wrapper {
+  background-color: #0c0c0c;
+  min-height: 100vh;
+  padding: 40px;
+  color: #e0e0e0;
+  font-family: 'Inter', sans-serif;
+}
+
+.pixel-font { font-family: 'Inter', sans-serif; font-weight: 900; letter-spacing: -1px; color: #fff; }
+
+.admin-header {
+  border-bottom: 2px solid #222;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+.admin-subtitle {
+  font-size: 10px;
+  color: #f39c12;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* TABS */
+.admin-tabs {
+  gap: 5px;
+  margin-bottom: 30px;
+}
+
+.admin-tabs button {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #888;
+  padding: 12px 25px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-tabs button.active {
+  background: #f39c12;
+  color: #000;
+  border-color: #000;
+}
+
+/* TABLES & DATA */
+.pixel-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #151515;
+}
+
+.pixel-table th {
+  background: #222;
+  padding: 15px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.pixel-table td {
+  padding: 15px;
+  border-bottom: 1px solid #222;
+}
+
+.status-pill {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #2ecc71;
+  color: #000;
+  text-transform: uppercase;
+}
+
+.status-pill.blocked {
+  background: #e74c3c;
+  color: #fff;
+}
+
+/* DEPLOYMENT FORM */
+.artifact-deploy-box {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 40px;
+  max-width: 600px;
+}
+
+.grid-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #f39c12;
+}
+
+.form-group input {
+  width: 100%;
+  background: #000;
+  border: 1px solid #333;
+  padding: 12px;
+  color: #fff;
+  outline: none;
+}
+
+.btn-deploy {
+  background: #f39c12;
+  border: none;
+  padding: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* BUTTONS */
+.btn-block-action { background: #c0392b; color: white; border: none; padding: 6px 12px; font-weight: 700; cursor: pointer; }
+.btn-restore-action { background: #27ae60; color: white; border: none; padding: 6px 12px; font-weight: 700; cursor: pointer; }
+.btn-exit-admin { background: transparent; border: 1px solid #444; color: #888; padding: 8px 15px; cursor: pointer; font-size: 12px; }
+
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

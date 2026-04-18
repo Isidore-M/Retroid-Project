@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ItemService } from '../../services/item'; // Or item.service depending on your filename
+import { ItemService } from '../../services/item';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,10 +15,10 @@ export class DashboardComponent implements OnInit {
   user: any;
 
   // 1. DATA ARRAYS
-  allMarketplaceItems: any[] = []; // The 'Master List' that holds everything fetched from DB
-  marketplaceItems: any[] = [];    // The 'Display List' that updates when you search/filter
+  allMarketplaceItems: any[] = [];
+  marketplaceItems: any[] = [];
 
-  // 2. BIDDING ROOM ARRAY (Static for now, Admin only later)
+  // 2. BIDDING ROOM ARRAY
   biddingItems: any[] = [
     { id: 1, name: 'Gameboy Color', category: 'Consoles', price: 300, currency_type: 'points' },
     { id: 2, name: 'Mario Kart', category: 'Games', price: 150, currency_type: 'points' }
@@ -42,59 +42,63 @@ export class DashboardComponent implements OnInit {
   constructor(
     private router: Router,
     private itemService: ItemService,
-    private cdr: ChangeDetectorRef // Gives us the power to force screen updates
+    private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      this.user = JSON.parse(savedUser);
-      this.loadMarketplace(); // Fetch real items on load
-    } else {
-      this.router.navigate(['/login']);
-    }
-  }
+ngOnInit() {
+  const savedUser = localStorage.getItem('user');
 
-  /**
-   * Fetches items from the PHP backend and organizes them for the UI
-   */
+  if (savedUser) {
+    try {
+      this.user = JSON.parse(savedUser);
+
+      // DEBUG: Check your browser console (F12) to see these values!
+      console.log('--- Retroid Session Debug ---');
+      console.log('Username:', this.user?.username);
+      console.log('Admin Flag:', this.user?.is_admin);
+      console.log('Data Type:', typeof this.user?.is_admin);
+
+      // Force cast is_admin to a Number to ensure the *ngIf works
+      if (this.user) {
+        this.user.is_admin = Number(this.user.is_admin);
+      }
+
+      this.loadMarketplace();
+    } catch (e) {
+      console.error("Failed to parse user session", e);
+      this.logout(); // Clear bad data
+    }
+  } else {
+    this.router.navigate(['/login']);
+  }
+}
+
   loadMarketplace() {
-    // Pass the user ID so the backend knows whose "Likes" to check
     this.itemService.getItems(this.user.id).subscribe({
       next: (data) => {
-        // Map the SQL 1/0 'is_liked' to a strict true/false boolean for Angular's UI
         this.allMarketplaceItems = data.map(item => ({
           ...item,
-          isLiked: item.is_liked == 1 // Converts SQL result to a boolean
+          isLiked: item.is_liked == 1
         })).sort((a, b) => b.id - a.id);
 
-        // Run the filters immediately to populate the screen
         this.applyFilters();
       },
       error: (err) => console.error("Error loading items:", err)
     });
   }
 
-  /**
-   * Changes the active category and triggers the filter
-   */
   setCategory(category: string) {
     this.activeCategory = category;
     this.applyFilters();
   }
 
-  /**
-   * The core filtering engine: handles both search text and categories
-   */
   applyFilters() {
     let filteredList = this.allMarketplaceItems;
 
-    // Step 1: Filter by Category (if not 'All')
     if (this.activeCategory !== 'All') {
       filteredList = filteredList.filter(item => item.category === this.activeCategory);
     }
 
-    // Step 2: Filter by Search Text (if user typed something)
     if (this.searchQuery.trim() !== '') {
       const lowerCaseQuery = this.searchQuery.toLowerCase();
       filteredList = filteredList.filter(item =>
@@ -102,7 +106,6 @@ export class DashboardComponent implements OnInit {
       );
     }
 
-    // Step 3: Update the display array and force a screen refresh
     this.marketplaceItems = filteredList;
     this.cdr.detectChanges();
   }
@@ -119,7 +122,17 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * UPDATED: Now checks for Admin Block status before allowing upload
+   */
   submitItem() {
+    // 1. Check if user is blocked
+    if (this.user.status === 'blocked') {
+      alert(`STOP! You have been blocked by the admins due to: ${this.user.block_reason || 'Community Guidelines violation'}`);
+      return;
+    }
+
+    // 2. Validate form
     if (!this.newItem.name || !this.newItem.category || !this.newItem.price || !this.newItem.image) {
       alert("All fields are required!");
       return;
@@ -138,7 +151,7 @@ export class DashboardComponent implements OnInit {
         if (res.status === 'success') {
           alert("Impeccable! Your item is now live.");
           this.resetForm();
-          this.loadMarketplace(); // Refresh the grid automatically
+          this.loadMarketplace();
         } else {
           alert("Upload issue: " + res.message);
         }
@@ -168,20 +181,13 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Handles the Smart Like/Unlike toggling
-   */
   toggleLike(item: any) {
-    // 1. Optimistic Update: Flip the UI instantly
     item.isLiked = !item.isLiked;
-    // Add 1 if liked, subtract 1 if unliked
     item.likes = Number(item.likes) + (item.isLiked ? 1 : -1);
-    this.cdr.detectChanges(); // Force screen update
+    this.cdr.detectChanges();
 
-    // 2. Sync with Backend
     this.itemService.likeItem(item.id, this.user.id).subscribe({
       error: (err) => {
-        // Rollback UI if the server fails or connection drops
         item.isLiked = !item.isLiked;
         item.likes = Number(item.likes) + (item.isLiked ? 1 : -1);
         this.cdr.detectChanges();

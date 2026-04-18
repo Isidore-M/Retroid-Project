@@ -76,6 +76,33 @@ export class ItemService {
       catchError(this.handleError)
     );
   }
+updateUserInfo(userId: number, username: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/update_user_info.php`, {
+    user_id: userId,
+    username: username
+  });
+}
 
+getAdminOversight(): Observable<any> {
+  return this.http.get(`${this.apiUrl}/admin_get_all.php`);
+}
+
+// And the block action
+blockUser(userId: number, reason: string): Observable<any> {
+  return this.http.post(`${this.apiUrl}/admin_actions.php`, {
+    action: 'block',
+    user_id: userId,
+    reason: reason
+  });
+}
+
+
+// Inside ItemService class
+unblockUser(userId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/admin_actions.php`, {
+    action: 'unblock',
+    user_id: userId
+  });
+}
 
 }

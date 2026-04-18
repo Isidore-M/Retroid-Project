@@ -1,98 +1,169 @@
-<div class="dashboard-wrapper">
+<div class="profile-page-bg">
+  <div class="main-shell">
 
-  <nav class="custom-nav d-flex justify-content-between align-items-center mb-5">
-    <div class="nav-left d-flex align-items-center">
-      <button class="btn-pixel-plus me-3" routerLink="/dashboard">
-        <i class="bi bi-arrow-left"></i> Back to Market
+    <nav class="top-nav">
+      <button class="nav-btn-outline" routerLink="/dashboard">
+        <svg viewBox="0 0 10 10" width="12" height="12" class="pixel-icon-inline">
+          <path d="M4 1h1v1H4V1zm-1 1h1v1H3V2zm-1 1h1v1H2V3zm-1 1h1v1H1V4zm0 1h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h1v1H4V8h5V1H4v1h4v5H4v1z"/>
+        </svg>
+        Back to Market
+      </button>
+      <button class="nav-btn-outline" (click)="logout()">Exit</button>
+    </nav>
+
+    <div class="banner-area">
+      <button class="edit-pixel-btn banner-edit-pos" (click)="triggerBannerUpload()">
+        <svg viewBox="0 0 10 10" width="14" height="14" fill="white">
+          <path d="M7 1h2v2H7V1zM6 2h1v1H6V2zm-1 1h1v1H5V3zm-1 1h1v1H4V4zm-1 1h1v1H3V5zm-1 1h1v1H2V6zM1 7h1v2H1V7zm1 1h1v1H2V8z"/>
+        </svg>
       </button>
     </div>
-    <div class="nav-right">
-      <button class="btn-logout" (click)="logout()">
-        <i class="bi bi-power"></i> Exit
-      </button>
+
+    <div class="banner-actions-strip">
+      <div class="banner-buttons">
+        <button class="pixel-action-btn">
+          <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+            <path d="M1 1h3v1H1V1zm3 1h3v3H4V2zm3 0h2v1H7V2zM1 5h3v1H1V5zm3 1h1v3H4V6zm1 0h1v1H5V6z"/>
+          </svg>
+          biddings
+          <span class="badge-count">1</span>
+        </button>
+        <button class="pixel-action-btn">
+          <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+            <path d="M0 2h10v6H0V2zm1 1v1h1V3H1zm1 1v1h1V4H2zm1 1v1h1V5H3zm1 0h2v1H4V5zm3-1v1h1V4H7zm1-1v1h1V3H8z"/>
+          </svg>
+          Messages
+          <span class="badge-count">2</span>
+        </button>
+      </div>
     </div>
-  </nav>
 
-  <section class="profile-header text-center mb-5">
-    <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'"
-         class="rounded-circle border border-dark border-3 mb-3"
-         style="width: 120px; height: 120px; object-fit: cover;"
-         (error)="$any($event.target).src='/avatars/1.jpeg'" alt="Avatar">
-
-    <h1 class="pixel-font">{{ user?.username }}</h1>
-    <div class="xp-badge d-inline-flex align-items-center justify-content-center px-4 py-2 mt-2" style="background: var(--retro-green); border: 2px solid black; border-radius: 8px;">
-      <strong class="fs-4">{{ user?.points }}</strong>
-      <img src="assets/coin.svg" class="coin-icon ms-2" style="width: 24px;" alt="XP">
-    </div>
-  </section>
-
-  <div class="d-flex justify-content-center gap-3 mb-5">
-    <button type="button" class="filter-btn" [class.active]="activeTab === 'listings'" (click)="setTab('listings', $event)">
-      My Listings ({{ myItems.length }})
-    </button>
-    <button type="button" class="filter-btn" [class.active]="activeTab === 'favorites'" (click)="setTab('favorites', $event)">
-      My Favorites ({{ likedItems.length }})
-    </button>
-  </div>
-
-  <section *ngIf="activeTab === 'listings'">
-    <div class="popular-grid" *ngIf="myItems.length > 0">
-      <div class="popular-card" *ngFor="let item of myItems">
-        <div class="popular-img-box">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
-        </div>
-        <div class="popular-footer d-flex justify-content-between p-3">
-          <div>
-            <h3 class="pop-item-name">{{ item.name }}</h3>
-            <span class="text-muted" style="font-size: 0.8rem;">Listed by you</span>
-          </div>
-          <div class="pop-price text-end">
-            <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
-            <ng-container *ngIf="item.currency_type === 'points'">{{ item.price }} <img src="assets/coin.svg" class="coin-icon" alt="coins"></ng-container>
-          </div>
+    <div class="header-details">
+      <div class="avatar-box position-relative">
+        <img [src]="'/avatars/' + (user?.avatar_id || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
+        <button class="edit-pixel-btn avatar-edit-pos" (click)="triggerAvatarUpload()">
+          <svg viewBox="0 0 10 10" width="12" height="12" fill="white">
+            <path d="M7 1h2v2H7V1zM6 2h1v1H6V2zm-1 1h1v1H5V3zm-1 1h1v1H4V4zm-1 1h1v1H3V5zm-1 1h1v1H2V6zM1 7h1v2H1V7zm1 1h1v1H2V8z"/>
+          </svg>
+        </button>
+      </div>
+      <div class="user-meta">
+        <h1 class="user-display-name">{{ user?.username }}</h1>
+        <div class="points-display">
+          <img src="/coin.svg" class="coin-icon"> {{ user?.points }}
         </div>
       </div>
     </div>
 
-    <div class="empty-state-container" *ngIf="myItems.length === 0">
-      <div class="text-center">
-        <i class="bi bi-box fs-1 text-muted mb-3"></i>
-        <h3 class="text-muted pixel-font">No listings yet</h3>
-        <p class="text-muted">Head back to the market to post your first item.</p>
-      </div>
-    </div>
-  </section>
+    <div class="profile-container">
+      <aside class="sidebar">
+        <button class="side-link" [class.active]="activeTab === 'listings'" (click)="setTab('listings', $event)">
+          <span class="d-flex align-items-center">
+            <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+              <path d="M1 2h1v1H1V2zm3 0h5v1H4V2zM1 4h1v1H1V4zm3 0h5v1H4V4zM1 6h1v1H1V6zm3 0h5v1H4V6z"/>
+            </svg>
+            My listings
+          </span>
+          <span class="count-tag">{{ myItems.length | number:'2.0' }}</span>
+        </button>
 
-  <section *ngIf="activeTab === 'favorites'">
-    <div class="popular-grid" *ngIf="likedItems.length > 0">
-      <div class="popular-card" *ngFor="let item of likedItems">
-        <div class="popular-img-box">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path" [alt]="item.name">
-        </div>
-        <div class="popular-footer d-flex justify-content-between align-items-center p-3">
-          <div class="item-details">
-            <h3 class="pop-item-name">{{ item.name }}</h3>
-            <div class="pop-meta">
-              <span class="posted-by">by <strong>{{ item.username }}</strong></span>
+        <button class="side-link" [class.active]="activeTab === 'info'" (click)="setTab('info', $event)">
+          <span class="d-flex align-items-center">
+            <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+              <path d="M4 1h2v1H4V1zm0 3h2v5H4V4zm0-2h2v1H4V2z"/>
+            </svg>
+            User Informations
+          </span>
+        </button>
+
+        <button class="side-link" [class.active]="activeTab === 'notifications'" (click)="setTab('notifications', $event)">
+          <span class="d-flex align-items-center">
+            <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+              <path d="M4 1h2v1H4V1zm-1 1h4v5H3V2zm-1 5h6v1H2V7zm2 1h2v1H4V8z"/>
+            </svg>
+            Notifications
+          </span>
+        </button>
+
+        <button class="side-link logout-btn" (click)="logout()">
+          <span class="d-flex align-items-center">
+            <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2" fill="white">
+              <path d="M2 1h5v1H2V1zm6 3h1v2H8V4zM2 8h5v1H2V8zM1 2h1v6H1V2z"/>
+            </svg>
+            Log out
+          </span>
+        </button>
+      </aside>
+
+      <main class="canvas">
+        <div *ngIf="activeTab === 'listings'" class="fade-in">
+          <h2 class="canvas-h">My listings</h2>
+          <p class="sub-h">Number of items : {{ myItems.length | number:'2.0' }}</p>
+
+          <div class="listing-table">
+            <div class="listing-row" *ngFor="let item of myItems">
+              <span class="item-name">{{ item.name }}</span>
+              <div class="item-price-info">
+                <span class="price-val">
+                   <img *ngIf="item.currency_type === 'points'" src="/coin.svg" class="coin-micro">
+                   {{ item.currency_type === 'dollars' ? '$' : '' }}{{ item.price }}
+                </span>
+
+                <span class="likes-tag d-flex align-items-center">
+                  <svg class="pixel-heart me-1" viewBox="0 0 10 10" width="14" height="14">
+                    <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 6h1v1H1V9zm7 0h1v1H8V9zm-6 1h1v1H2v-1zm5 0h1v1H7v-1zm-4 1h3v1H3v-1z" />
+                  </svg>
+                  {{ item.likes || 0 }} likes
+                </span>
+              </div>
             </div>
           </div>
-          <div class="like-container d-flex align-items-center">
-            <svg class="pixel-heart liked" viewBox="0 0 10 10" width="20" height="20" style="fill: #ff4757; shape-rendering: crispedges;">
-              <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
-            </svg>
-            <span class="like-count ms-2">{{ item.likes }}</span>
+        </div>
+
+        <div *ngIf="activeTab === 'info'" class="fade-in">
+          <h2 class="canvas-h">User informations</h2>
+
+          <div class="info-section">
+            <p class="section-label">personal information</p>
+            <div class="info-form-box">
+              <div class="input-group-pixel mb-3">
+                <input type="text" [(ngModel)]="editUsername" placeholder="Isidore Manga">
+              </div>
+              <div class="input-group-pixel mb-3">
+                <input type="text" disabled [value]="user?.username">
+              </div>
+              <div class="d-flex justify-content-end">
+                <button class="upgrade-btn" (click)="saveInfo()">
+                  <svg viewBox="0 0 10 10" width="12" height="12" fill="white" class="me-2"><path d="M1 5h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h3v1H4V8zm4-1h1v1H8V7zm1-1h1v1H9V6z"/></svg>
+                  Upgrade
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section mt-4">
+            <p class="section-label">Password</p>
+            <div class="info-form-box">
+              <div class="input-group-pixel mb-2">
+                <input type="password" placeholder="current password">
+              </div>
+              <div class="input-group-pixel mb-2">
+                <input type="password" placeholder="New password">
+              </div>
+              <div class="input-group-pixel mb-3">
+                <input type="password" placeholder="Confirm New password">
+              </div>
+              <div class="d-flex justify-content-end">
+                <button class="upgrade-btn" (click)="updatePassword()">
+                  <svg viewBox="0 0 10 10" width="12" height="12" fill="white" class="me-2"><path d="M1 5h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h3v1H4V8zm4-1h1v1H8V7zm1-1h1v1H9V6z"/></svg>
+                  Upgrade
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="empty-state-container" *ngIf="likedItems.length === 0">
-      <div class="text-center">
-        <i class="bi bi-heart fs-1 text-muted mb-3"></i>
-        <h3 class="text-muted pixel-font">No favorites</h3>
-        <p class="text-muted">Items you like in the market will appear here.</p>
-      </div>
+      </main>
     </div>
-  </section>
-
+  </div>
 </div>
