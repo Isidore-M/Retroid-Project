@@ -69,39 +69,83 @@ export class DashboardComponent implements OnInit {
   }
 
   loadMarketplace() {
-    // 1. Load Regular Marketplace Items
-    this.itemService.getItems(this.user.id).subscribe({
-      next: (data) => {
-        if (!data || !Array.isArray(data)) {
-          this.allMarketplaceItems = [];
-        } else {
-          this.allMarketplaceItems = data
-            .filter((item: any) => {
-              const isBiddingValue = item.is_bidding !== undefined && item.is_bidding !== null
-                                     ? Number(item.is_bidding)
-                                     : 0;
-              return isBiddingValue === 0;
-            })
-            .map((item: any) => ({
-              ...item,
-              isLiked: item.is_liked == 1,
-              image_path: item.image_path || 'placeholder.jpg'
-            }));
-        }
-        this.applyFilters();
-      },
-      error: (err) => console.error("Marketplace load error", err)
-    });
+  // 1. Refresh User Data (To catch XP Refunds if outbid)
+ // 1. Refresh User Data (To catch XP Refunds if outbid)
+this.itemService.getUserProfile(this.user.id).subscribe({
+  next: (res: any) => {
+    // We check for res.user because the PHP now returns { status: 'success', user: {...} }
+    if (res && res.status === 'success' && res.user) {
 
-    // 2. Load Bidding Room Artifacts
-    this.itemService.getBiddingItems().subscribe({
-      next: (data) => {
-        this.biddingItems = Array.isArray(data) ? data : [];
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error("Bidding load error", err)
-    });
-  }
+      // Update only specific properties to avoid wiping out session data
+      // Force Number conversion to prevent math glitches in the Modal *ngIf
+      this.user.points = Number(res.user.points);
+
+      // Keep the Admin flag synced so the Control Center tab doesn't vanish
+      this.user.is_admin = Number(res.user.is_admin);
+
+      // Update the user status (e.g., if an admin blocks you mid-session)
+      this.user.status = res.user.status;
+
+      // Sync the updated object to LocalStorage for persistence
+      localStorage.setItem('user', JSON.stringify(this.user));
+
+      // Tell Angular to refresh the UI immediately
+      this.cdr.detectChanges();
+    }
+  },
+  error: (err) => console.error("Identity sync failed:", err)
+});
+
+  // 2. Load Regular Marketplace Items
+  this.itemService.getItems(this.user.id).subscribe({
+    next: (data) => {
+      if (!data || !Array.isArray(data)) {
+        this.allMarketplaceItems = [];
+      } else {
+        this.allMarketplaceItems = data
+          .filter((item: any) => Number(item.is_bidding || 0) === 0)
+          .map((item: any) => ({
+            ...item,
+            isLiked: item.is_liked == 1,
+            image_path: item.image_path || 'placeholder.jpg'
+          }));
+      }
+      this.applyFilters();
+    },
+    error: (err) => console.error("Marketplace load error", err)
+  });
+
+  // 3. Load Bidding Room Artifacts + Winner Check
+  this.itemService.getBiddingItems().subscribe({
+    next: (data) => {
+      // Ensure current_bid and price are numbers for the modal math
+      this.biddingItems = Array.isArray(data) ? data.map(item => ({
+        ...item,
+        price: Number(item.price),
+        current_bid: item.current_bid ? Number(item.current_bid) : null
+      })) : [];
+
+      // CHECK FOR WINNERS
+      const now = new Date().getTime();
+      this.biddingItems.forEach(item => {
+        if (item.expiry_time) {
+          const end = new Date(item.expiry_time).getTime();
+
+          // Check if ended and user is leader
+          if (end < now && Number(item.highest_bidder_id) === Number(this.user.id)) {
+            if (!item.hasNotified) {
+              this.toastService.show(`CONGRATULATIONS! You won the ${item.name}! Check your vault.`, "success");
+              item.hasNotified = true;
+            }
+          }
+        }
+      });
+
+      this.cdr.detectChanges();
+    },
+    error: (err) => console.error("Bidding load error", err)
+  });
+}
 
   setCategory(category: string) {
     this.activeCategory = category;
@@ -141,47 +185,62 @@ export class DashboardComponent implements OnInit {
       modal.show();
     }
   }
+  
+submitBid() {
+  if (!this.selectedItem || !this.bidAmount) return;
 
-  submitBid() {
-    if (!this.selectedItem || !this.bidAmount) return;
+  const currentPrice = Number(this.selectedItem.current_bid || this.selectedItem.price);
 
-    const currentPrice = Number(this.selectedItem.current_bid || this.selectedItem.price);
-
-    // 1. XP Wallet Check
-    if (this.bidAmount > this.user.points) {
-      this.toastService.show("Insufficient XP! You need more coins to place this bid.", "error");
-      return;
-    }
-
-    // 2. Minimum Bid Check
-    if (this.bidAmount <= currentPrice) {
-      this.toastService.show(`Bid too low! Must be higher than ${currentPrice} XP.`, "warning");
-      return;
-    }
-
-    // 3. API Call
-    this.itemService.placeBid(this.selectedItem.id, this.user.id, this.bidAmount).subscribe({
-      next: (res: any) => {
-        if (res.status === 'success') {
-          this.toastService.show("Bid Successful! You are currently the highest bidder.", "success");
-
-          // Visual feedback: Deduct points locally
-          this.user.points -= this.bidAmount!;
-          localStorage.setItem('user', JSON.stringify(this.user));
-
-          this.loadMarketplace(); // Refresh lists
-
-          // Close Modal
-          const modalElement = document.getElementById('bidModal');
-          const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
-          if (modal) modal.hide();
-        } else {
-          this.toastService.show(res.message || "Bid failed.", "error");
-        }
-      },
-      error: () => this.toastService.show("Server error. Could not place bid.", "error")
-    });
+  // 1. XP Wallet Check
+  if (this.bidAmount > this.user.points) {
+    this.toastService.show("Insufficient XP! You need more coins to place this bid.", "error");
+    return;
   }
+
+  // 2. Minimum Bid Check
+  if (this.bidAmount <= currentPrice) {
+    this.toastService.show(`Bid too low! Must be higher than ${currentPrice} XP.`, "warning");
+    return;
+  }
+
+  // 3. API Call
+  this.itemService.placeBid(this.selectedItem.id, this.user.id, this.bidAmount).subscribe({
+    next: (res: any) => {
+      if (res.status === 'success') {
+        // --- THE CONFIRMATION MESSAGE ---
+        this.toastService.show("BID REGISTERED: You are now the highest bidder!", "success");
+
+        // 4. Update the local wallet immediately using the server's response
+        // This ensures the header and the database are perfectly in sync
+        if (res.new_balance !== undefined) {
+          this.user.points = Number(res.new_balance);
+        } else {
+          // Fallback if PHP doesn't send new_balance
+          this.user.points -= this.bidAmount!;
+        }
+
+        // Save updated points to storage
+        localStorage.setItem('user', JSON.stringify(this.user));
+
+        // 5. Refresh the marketplace to update the yellow tags for everyone
+        this.loadMarketplace();
+
+        // 6. Close the Modal
+        const modalElement = document.getElementById('bidModal');
+        const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+          modal.hide();
+        }
+      } else {
+        // Handle server-side errors (like someone outbidding you at the last second)
+        this.toastService.show(res.message || "Bid failed. Please try again.", "error");
+      }
+    },
+    error: () => {
+      this.toastService.show("Connection Error: The auction house is currently unreachable.", "error");
+    }
+  });
+}
 
   /**
    * ITEM POSTING LOGIC

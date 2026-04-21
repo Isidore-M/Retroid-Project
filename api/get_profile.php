@@ -15,15 +15,26 @@ $user_id = $_GET['user_id'] ?? null;
 
 if ($user_id) {
     try {
-        // 1. Fetch items posted by this user
+        // 1. Fetch User Stats (Points, Admin Status, Account Status)
+        // This is CRITICAL for keeping the XP pill and Admin tabs visible
+        $user_query = "SELECT id, username, points, is_admin, status FROM users WHERE id = :uid";
+        $stmt_user = $conn->prepare($user_query);
+        $stmt_user->execute(['uid' => $user_id]);
+        $user_stats = $stmt_user->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user_stats) {
+            throw new Exception("User not found.");
+        }
+
+        // 2. Fetch items posted by this user
         $my_items_query = "SELECT * FROM items WHERE user_id = :uid ORDER BY id DESC";
         $stmt1 = $conn->prepare($my_items_query);
         $stmt1->execute(['uid' => $user_id]);
         $my_items = $stmt1->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. Fetch items liked by this user
+        // 3. Fetch items liked by this user
         $liked_items_query = "
-            SELECT items.*, users.username
+            SELECT items.*, users.username as owner_name
             FROM items
             JOIN item_likes ON items.id = item_likes.item_id
             JOIN users ON items.user_id = users.id
@@ -33,10 +44,11 @@ if ($user_id) {
         $stmt2->execute(['uid' => $user_id]);
         $liked_items = $stmt2->fetchAll(PDO::FETCH_ASSOC);
 
-        // 3. Return both lists inside one JSON object
+        // 4. Return the combined "God View" of the user's current session
         ob_end_clean();
         echo json_encode([
             "status" => "success",
+            "user" => $user_stats, // NEW: Returns points and admin flag
             "my_items" => $my_items,
             "liked_items" => $liked_items
         ]);
