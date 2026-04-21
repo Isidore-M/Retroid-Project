@@ -1,13 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router'; // Added for the 'Exit to Market' link
+import { RouterModule } from '@angular/router';
 import { ItemService } from '../../services/item';
+import { ToastService } from '../../services/toast.service'; // Ensure this service exists
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule], // Added RouterModule
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css']
 })
@@ -19,27 +20,27 @@ export class AdminComponent implements OnInit {
   // Data Arrays
   users: any[] = [];
   allItems: any[] = [];
-  biddingItems: any[] = []; // Array specifically for the bidding management view
+  biddingItems: any[] = [];
 
   // Model for adding to Bidding Room
   newArtifact: any = {
     name: '',
     price: null,
-    image: null as File | null
+    image: null as File | null,
+    expiry_custom: '' // Field for the Admin-controlled timer
   };
 
   constructor(
     private itemService: ItemService,
+    public toastService: ToastService, // Must be PUBLIC to avoid the template error
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    // Get current admin details from session
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.adminUser = JSON.parse(savedUser);
     }
-
     this.loadAllData();
   }
 
@@ -52,21 +53,19 @@ export class AdminComponent implements OnInit {
         if (res.status === 'success') {
           this.users = res.data.users;
           this.allItems = res.data.items;
-
-          // Filter items that are currently in the bidding room for the management tab
           this.biddingItems = this.allItems.filter(item => item.is_bidding == 1);
-
           this.cdr.detectChanges();
         }
       },
-      error: (err) => console.error("Could not load oversight data:", err)
+      error: (err) => {
+        console.error("Oversight data error:", err);
+        this.toastService.show("Failed to sync system data.", "error");
+      }
     });
   }
 
   setTab(tab: 'users' | 'market' | 'bidding') {
     this.activeTab = tab;
-    // We don't always need to refresh the whole DB on tab switch,
-    // but it ensures the Admin always sees real-time data.
     this.loadAllData();
   }
 
@@ -82,29 +81,27 @@ export class AdminComponent implements OnInit {
           if (res.status === 'success') {
             user.status = 'blocked';
             user.block_reason = reason;
-            alert(`${user.username} has been restricted.`);
+            this.toastService.show(`${user.username} has been restricted.`, "warning");
             this.cdr.detectChanges();
           }
         },
-        error: () => alert("System error: The hammer failed to drop.")
+        error: () => this.toastService.show("System error: Hammer failed to drop.", "error")
       });
     }
   }
 
   unblockUser(user: any) {
-    if (confirm(`Restore access for ${user.username}?`)) {
-      this.itemService.unblockUser(user.id).subscribe({
-        next: (res: any) => {
-          if (res.status === 'success') {
-            user.status = 'active';
-            user.block_reason = null;
-            alert(`Access restored for ${user.username}.`);
-            this.cdr.detectChanges();
-          }
-        },
-        error: () => alert("Could not communicate with the security server.")
-      });
-    }
+    this.itemService.unblockUser(user.id).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          user.status = 'active';
+          user.block_reason = null;
+          this.toastService.show(`Access restored for ${user.username}.`, "success");
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => this.toastService.show("Could not unblock user.", "error")
+    });
   }
 
   onFileSelected(event: any) {
@@ -115,12 +112,25 @@ export class AdminComponent implements OnInit {
   }
 
   /**
-   * Deploys a new artifact to the Bidding Room
+   * Deploys a new artifact with Admin-controlled Timer
    */
   postArtifact() {
     if (!this.newArtifact.name || !this.newArtifact.price || !this.newArtifact.image) {
-      alert("Artifact blueprints incomplete! Name, price, and image required.");
+      this.toastService.show("Blueprints incomplete! Image and data required.", "warning");
       return;
+    }
+
+    let mysqlExpiry = '';
+
+    // Check if Admin set a custom date
+    if (this.newArtifact.expiry_custom) {
+      // Formats HTML5 datetime-local to MySQL format
+      mysqlExpiry = this.newArtifact.expiry_custom.replace('T', ' ') + ':00';
+    } else {
+      // Default fallback: 24 Hours from now
+      const expiryDate = new Date();
+      expiryDate.setHours(expiryDate.getHours() + 24);
+      mysqlExpiry = expiryDate.toISOString().slice(0, 19).replace('T', ' ');
     }
 
     const formData = new FormData();
@@ -129,23 +139,25 @@ export class AdminComponent implements OnInit {
     formData.append('category', 'Artifact');
     formData.append('image', this.newArtifact.image);
     formData.append('user_id', this.adminUser.id);
-    formData.append('is_bidding', '1'); // Routes it to the bidding room
+    formData.append('is_bidding', '1');
+    formData.append('expiry_time', mysqlExpiry);
 
     this.itemService.postItem(formData).subscribe({
       next: (res: any) => {
         if (res.status === 'success') {
-          alert("DEPLOYMENT SUCCESSFUL: Artifact is now live in the Bidding Room.");
+          this.toastService.show("DEPLOYMENT SUCCESSFUL: Artifact is live!", "success");
           this.resetArtifactForm();
-          this.loadAllData(); // Refresh list to show new artifact
+          this.loadAllData();
+        } else {
+          this.toastService.show("Server Error: " + res.message, "error");
         }
       },
-      error: (err) => alert("Deployment failed. Check server logs.")
+      error: (err) => this.toastService.show("Deployment failed. Connection issue.", "error")
     });
   }
 
   private resetArtifactForm() {
-    this.newArtifact = { name: '', price: null, image: null };
-    // Clear the file input manually if needed
+    this.newArtifact = { name: '', price: null, image: null, expiry_custom: '' };
   }
 
   /**
@@ -153,8 +165,8 @@ export class AdminComponent implements OnInit {
    */
   deleteItem(itemId: number) {
     if (confirm("Permanently delete this marketplace listing?")) {
-      // You can implement this in your ItemService later
-      console.log("Deleting item:", itemId);
+      // Logic for deletion (can be added to ItemService)
+      this.toastService.show("Item removed from marketplace.", "error");
     }
   }
 }

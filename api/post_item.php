@@ -21,8 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $currency = $_POST['currency'] ?? 'points';
     $user_id = $_POST['user_id'] ?? null;
 
-    // NEW: Capture the is_bidding flag (defaults to 0 for regular users)
+    // Capture the is_bidding flag
     $is_bidding = isset($_POST['is_bidding']) ? (int)$_POST['is_bidding'] : 0;
+
+    // NEW: Capture the expiry_time sent from Angular
+    // For regular items, this will remain NULL
+    $expiry_time = $_POST['expiry_time'] ?? null;
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
 
@@ -37,8 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ob_end_clean();
             echo json_encode([
                 "status" => "error",
-                "message" => "Folder is not writable.",
-                "path_attempted" => $target_dir
+                "message" => "Folder is not writable."
             ]);
             exit;
         }
@@ -49,9 +52,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
             try {
-                // UPDATED QUERY: Added is_bidding column
-                $query = "INSERT INTO items (user_id, name, category, price, currency_type, image_path, is_bidding)
-                          VALUES (:uid, :name, :cat, :price, :curr, :path, :is_bid)";
+                /**
+                 * UPDATED QUERY:
+                 * Now includes the 'expiry_time' column to store the auction deadline.
+                 */
+                $query = "INSERT INTO items (user_id, name, category, price, currency_type, image_path, is_bidding, expiry_time)
+                          VALUES (:uid, :name, :cat, :price, :curr, :path, :is_bid, :expiry)";
 
                 $stmt = $conn->prepare($query);
                 $success = $stmt->execute([
@@ -61,15 +67,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'price'  => $price,
                     'curr'   => $currency,
                     'path'   => $new_filename,
-                    'is_bid' => $is_bidding // Saves as 1 for Admin Artifacts
+                    'is_bid' => $is_bidding,
+                    'expiry' => $expiry_time // Maps to the timestamp from Angular
                 ]);
 
                 if ($success) {
                     ob_end_clean();
                     echo json_encode([
                         "status" => "success",
-                        "message" => "Item listed!",
-                        "image" => $new_filename
+                        "message" => "Item listed successfully!",
+                        "image" => $new_filename,
+                        "expiry" => $expiry_time
                     ]);
                 } else {
                     throw new Exception("Database save failed.");
@@ -80,10 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             ob_end_clean();
-            echo json_encode([
-                "status" => "error",
-                "message" => "Could not move file to destination."
-            ]);
+            echo json_encode(["status" => "error", "message" => "Could not move file to destination."]);
         }
     } else {
         ob_end_clean();

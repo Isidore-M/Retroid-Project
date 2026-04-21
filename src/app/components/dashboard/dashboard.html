@@ -63,21 +63,20 @@
     </div>
 
     <div class="item-grid" *ngIf="biddingItems && biddingItems.length > 0; else noArtifacts">
-      <div class="item-card-mini" *ngFor="let item of biddingItems">
-        <div class="card-img-box">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
-               [alt]="item.name"
-               (error)="$any($event.target).src='/assets/placeholder.jpg'">
-        </div>
-        <div class="card-info d-flex justify-content-between align-items-center mt-2">
-          <span class="item-name text-truncate" style="max-width: 80px;">{{ item.name }}</span>
-          <span class="item-cat text-muted" style="font-size: 0.7rem;">{{ item.category }}</span>
-          <span class="item-price">
-            <strong>{{ item.current_bid || item.price }}</strong>
-            <img src="/coin.svg" class="coin-icon" alt="coins">
-          </span>
-        </div>
-      </div>
+      <div class="item-card-mini" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)" style="cursor: pointer;">
+  <div class="card-img-box">
+    <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+         [alt]="item.name"
+         (error)="$any($event.target).src='/assets/placeholder.jpg'">
+  </div>
+  <div class="card-info d-flex justify-content-between align-items-center mt-2">
+    <span class="item-name text-truncate">{{ item.name }}</span>
+    <span class="item-price">
+      <strong>{{ item.current_bid || item.price }}</strong>
+      <img src="/coin.svg" class="coin-icon" alt="coins">
+    </span>
+  </div>
+</div>
     </div>
     <ng-template #noArtifacts>
       <div class="text-center p-4 border-dashed rounded">
@@ -195,6 +194,35 @@
           </div>
           <button class="btn-pixel-post w-100" (click)="submitItem()">List Item</button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="bidModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content retro-modal">
+      <div class="modal-header border-0">
+        <h5 class="modal-title pixel-text-sm">Place your Bid</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body text-center" *ngIf="selectedItem">
+        <img [src]="'http://localhost/retroid/public/items/' + selectedItem.image_path" class="modal-preview-img mb-3">
+        <h3 class="pixel-font2">{{ selectedItem.name }}</h3>
+        <p class="text-muted">Current High Bid: <strong>{{ selectedItem.current_bid || selectedItem.price }} XP</strong></p>
+
+        <div class="wallet-info mb-4">
+          <small>Your Wallet:</small>
+          <div class="xp-display">{{ user?.points }} <img src="/coin.svg" width="16"></div>
+        </div>
+
+        <div class="input-group-custom mb-3">
+          <input type="number" [(ngModel)]="bidAmount" [placeholder]="'Min bid: ' + ((selectedItem.current_bid || selectedItem.price) + 1)" class="retro-input text-center">
+        </div>
+
+        <button class="btn-pixel-post w-100" (click)="submitBid()">
+          Confirm Bid
+        </button>
       </div>
     </div>
   </div>

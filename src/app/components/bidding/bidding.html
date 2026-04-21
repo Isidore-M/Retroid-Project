@@ -1,24 +1,44 @@
-<div class="bidding-container">
-  <div class="bidding-header">
-    <h1 class="pixel-font">LIVE AUCTION ROOM</h1>
-    <p class="xp-balance">Your Balance: {{ user.points }} <img src="/coin.svg" width="16"></p>
+<div class="bidding-room-wrapper fade-in">
+  <div class="room-header d-flex justify-content-between align-items-end">
+    <div>
+      <h2 class="pixel-font text-gold">THE ARTIFACT CHAMBER</h2>
+      <p class="live-indicator"><span class="dot"></span> LIVE AUCTION DATA</p>
+    </div>
+    <div class="user-xp-display">
+      YOUR BALANCE: <strong>{{ user.points }}</strong> <img src="/coin.svg" width="16">
+    </div>
   </div>
 
-  <div class="artifact-grid">
-    <div class="artifact-card" *ngFor="let art of artifacts">
-      <div class="timer-tag">Ends in: 04:22:10</div>
-      <img [src]="'http://localhost/retroid/public/items/' + art.image_path" class="art-img">
+  <div class="auction-grid">
+   <div class="auction-card" *ngFor="let art of artifacts">
+  <div class="timer-tag" [class.expired]="getRemainingTime(art.expiry_time) === 'AUCTION CLOSED'">
+    <i class="bi bi-stopwatch me-1"></i>
+    {{ getRemainingTime(art.expiry_time) }}
+  </div>
 
-      <div class="art-info">
-        <h3>{{ art.name }}</h3>
-        <p class="current-price">Current Bid: <strong>{{ art.current_bid || art.price }}</strong> XP</p>
-        <p class="top-bidder">Highest Bidder: {{ art.highest_bidder || 'No bids yet' }}</p>
+  <div class="art-visual">
+    <img [src]="'http://localhost/retroid/public/items/' + art.image_path">
+  </div>
 
-        <div class="bid-input-group">
-          <input type="number" #bidAmount [placeholder]="(art.current_bid || art.price) + 10">
-          <button (click)="placeBid(art, +bidAmount.value)">PLACE BID</button>
-        </div>
-      </div>
+  <div class="art-details">
+    <h3>{{ art.name }}</h3>
+
+    <div class="price-box">
+      <label>CURRENT BID</label>
+      <div class="big-price">{{ art.current_bid || art.price }} <img src="/coin.svg" width="20"></div>
     </div>
+
+    <div class="bid-action-group" *ngIf="getRemainingTime(art.expiry_time) !== 'AUCTION CLOSED'; else soldTemplate">
+      <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10">
+      <button (click)='placeBid(art, bidInput)'>PLACE BID</button>
+    </div>
+
+    <ng-template #soldTemplate>
+      <div class="sold-banner">
+        <h4 class="pixel-font">SOLD TO {{ art.highest_bidder || 'RESERVE NOT MET' }}</h4>
+      </div>
+    </ng-template>
+  </div>
+</div>
   </div>
 </div>

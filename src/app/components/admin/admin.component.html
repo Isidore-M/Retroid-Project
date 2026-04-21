@@ -97,21 +97,30 @@
         <div class="col-md-5">
           <div class="artifact-deploy-box">
             <h3>Deploy New Artifact</h3>
-            <p class="sub-text">Items posted here will appear in the Bidding Room.</p>
+            <p class="sub-text">Set the artifact details and auction deadline.</p>
 
             <div class="deploy-form grid-form">
               <div class="form-group">
                 <label>Artifact Name</label>
-                <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy">
+                <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy" class="retro-input">
               </div>
+
               <div class="form-group">
                 <label>Starting Bid (XP)</label>
-                <input type="number" [(ngModel)]="newArtifact.price" placeholder="500">
+                <input type="number" [(ngModel)]="newArtifact.price" placeholder="500" class="retro-input">
               </div>
+
+              <div class="form-group">
+                <label>Auction Expiry (Custom Date/Time)</label>
+                <input type="datetime-local" [(ngModel)]="newArtifact.expiry_custom" class="retro-input">
+                <small class="text-muted d-block mt-1">If left blank, auction defaults to 24 hours.</small>
+              </div>
+
               <div class="form-group">
                 <label>Visual Asset</label>
                 <input type="file" (change)="onFileSelected($event)" class="custom-file-input">
               </div>
+
               <button class="btn-deploy" (click)="postArtifact()">
                 Authorize Deployment
               </button>
@@ -126,7 +135,8 @@
               <img [src]="'http://localhost/retroid/public/items/' + item.image_path" class="admin-item-thumb">
               <div class="item-info">
                 <h4>{{ item.name }}</h4>
-                <p>Current High Bid: <strong>{{ item.current_bid || item.price }} XP</strong></p>
+                <p>High Bid: <strong>{{ item.current_bid || item.price }} XP</strong></p>
+                <p class="text-warning small" *ngIf="item.expiry_time">Ends: {{ item.expiry_time }}</p>
               </div>
               <div class="item-actions">
                 <button class="btn-delete-item" (click)="deleteItem(item.id)">Remove</button>
@@ -139,4 +149,11 @@
     </div>
 
   </main>
+
+  <div class="toast-container" *ngIf="toastService.currentToast | async as toast">
+    <div class="custom-toast" [ngClass]="toast.type">
+      <i class="bi" [ngClass]="toast.type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'"></i>
+      <span>{{ toast.message }}</span>
+    </div>
+  </div>
 </div>

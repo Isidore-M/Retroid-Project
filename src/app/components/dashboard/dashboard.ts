@@ -3,6 +3,7 @@ import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemService } from '../../services/item';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,12 +18,11 @@ export class DashboardComponent implements OnInit {
   // 1. DATA ARRAYS
   allMarketplaceItems: any[] = [];
   marketplaceItems: any[] = [];
+  biddingItems: any[] = [];
 
-  // 2. BIDDING ROOM ARRAY
-  biddingItems: any[] = [
-    { id: 1, name: 'Gameboy Color', category: 'Consoles', price: 300, currency_type: 'points' },
-    { id: 2, name: 'Mario Kart', category: 'Games', price: 150, currency_type: 'points' }
-  ];
+  // 2. BIDDING MODAL STATE
+  selectedItem: any = null;
+  bidAmount: number | null = null;
 
   // 3. FILTER & SEARCH STATES
   searchQuery: string = '';
@@ -42,101 +42,66 @@ export class DashboardComponent implements OnInit {
   constructor(
     private router: Router,
     private itemService: ItemService,
+    public toastService: ToastService, // Added public for template access
     private cdr: ChangeDetectorRef
   ) {}
 
-ngOnInit() {
-  const savedUser = localStorage.getItem('user');
+  ngOnInit() {
+    const savedUser = localStorage.getItem('user');
 
-  if (savedUser) {
-    try {
-      this.user = JSON.parse(savedUser);
+    if (savedUser) {
+      try {
+        this.user = JSON.parse(savedUser);
 
-      // DEBUG: Check your browser console (F12) to see these values!
-      console.log('--- Retroid Session Debug ---');
-      console.log('Username:', this.user?.username);
-      console.log('Admin Flag:', this.user?.is_admin);
-      console.log('Data Type:', typeof this.user?.is_admin);
+        // Force cast is_admin to a Number for template logic
+        if (this.user) {
+          this.user.is_admin = Number(this.user.is_admin);
+        }
 
-      // Force cast is_admin to a Number to ensure the *ngIf works
-      if (this.user) {
-        this.user.is_admin = Number(this.user.is_admin);
+        this.loadMarketplace();
+      } catch (e) {
+        console.error("Failed to parse user session", e);
+        this.logout();
       }
-
-      this.loadMarketplace();
-    } catch (e) {
-      console.error("Failed to parse user session", e);
-      this.logout(); // Clear bad data
+    } else {
+      this.router.navigate(['/login']);
     }
-  } else {
-    this.router.navigate(['/login']);
   }
-}
-
-  // loadMarketplace() {
-  //   this.itemService.getItems(this.user.id).subscribe({
-  //     next: (data) => {
-  //       this.allMarketplaceItems = data.map(item => ({
-  //         ...item,
-  //         isLiked: item.is_liked == 1
-  //       })).sort((a, b) => b.id - a.id);
-
-  //       this.applyFilters();
-  //     },
-  //     error: (err) => console.error("Error loading items:", err)
-  //   });
-  // }
 
   loadMarketplace() {
-  // 1. Load Regular Marketplace Items
-  this.itemService.getItems(this.user.id).subscribe({
-    next: (data) => {
-      console.log("Marketplace Raw Data:", data); // Check F12 Console for this!
+    // 1. Load Regular Marketplace Items
+    this.itemService.getItems(this.user.id).subscribe({
+      next: (data) => {
+        if (!data || !Array.isArray(data)) {
+          this.allMarketplaceItems = [];
+        } else {
+          this.allMarketplaceItems = data
+            .filter((item: any) => {
+              const isBiddingValue = item.is_bidding !== undefined && item.is_bidding !== null
+                                     ? Number(item.is_bidding)
+                                     : 0;
+              return isBiddingValue === 0;
+            })
+            .map((item: any) => ({
+              ...item,
+              isLiked: item.is_liked == 1,
+              image_path: item.image_path || 'placeholder.jpg'
+            }));
+        }
+        this.applyFilters();
+      },
+      error: (err) => console.error("Marketplace load error", err)
+    });
 
-      if (!data || !Array.isArray(data)) {
-        console.warn("Marketplace returned empty or invalid data.");
-        this.allMarketplaceItems = [];
-      } else {
-        // Filter and Map with extra safety
-        this.allMarketplaceItems = data
-          .filter((item: any) => {
-            // If is_bidding is null/undefined, treat it as a regular item (0)
-            const isBiddingValue = item.is_bidding !== undefined && item.is_bidding !== null
-                                   ? Number(item.is_bidding)
-                                   : 0;
-            return isBiddingValue === 0;
-          })
-          .map((item: any) => ({
-            ...item,
-            isLiked: item.is_liked == 1,
-            // Fallback for missing image_path to prevent broken UI
-            image_path: item.image_path || 'placeholder.jpg'
-          }));
-      }
-
-      this.applyFilters();
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error("Critical error fetching marketplace items:", err);
-      this.allMarketplaceItems = [];
-      this.applyFilters();
-    }
-  });
-
-  // 2. Load Bidding Room Artifacts
-  this.itemService.getBiddingItems().subscribe({
-    next: (data) => {
-      console.log("Bidding Items Raw Data:", data);
-      this.biddingItems = Array.isArray(data) ? data : [];
-      this.cdr.detectChanges();
-    },
-    error: (err) => {
-      console.error("Critical error fetching bidding artifacts:", err);
-      this.biddingItems = [];
-    }
-  });
-}
+    // 2. Load Bidding Room Artifacts
+    this.itemService.getBiddingItems().subscribe({
+      next: (data) => {
+        this.biddingItems = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error("Bidding load error", err)
+    });
+  }
 
   setCategory(category: string) {
     this.activeCategory = category;
@@ -144,7 +109,7 @@ ngOnInit() {
   }
 
   applyFilters() {
-    let filteredList = this.allMarketplaceItems;
+    let filteredList = [...this.allMarketplaceItems];
 
     if (this.activeCategory !== 'All') {
       filteredList = filteredList.filter(item => item.category === this.activeCategory);
@@ -161,31 +126,74 @@ ngOnInit() {
     this.cdr.detectChanges();
   }
 
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.newItem.image = file;
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result;
-      };
-      reader.readAsDataURL(file);
+  /**
+   * BIDDING LOGIC
+   */
+  openBiddingModal(item: any) {
+    this.selectedItem = item;
+    // Set default bid to current price + 1
+    const currentPrice = Number(item.current_bid || item.price);
+    this.bidAmount = currentPrice + 1;
+
+    const modalElement = document.getElementById('bidModal');
+    if (modalElement) {
+      const modal = new (window as any).bootstrap.Modal(modalElement);
+      modal.show();
     }
   }
 
-  /**
-   * UPDATED: Now checks for Admin Block status before allowing upload
-   */
-  submitItem() {
-    // 1. Check if user is blocked
-    if (this.user.status === 'blocked') {
-      alert(`STOP! You have been blocked by the admins due to: ${this.user.block_reason || 'Community Guidelines violation'}`);
+  submitBid() {
+    if (!this.selectedItem || !this.bidAmount) return;
+
+    const currentPrice = Number(this.selectedItem.current_bid || this.selectedItem.price);
+
+    // 1. XP Wallet Check
+    if (this.bidAmount > this.user.points) {
+      this.toastService.show("Insufficient XP! You need more coins to place this bid.", "error");
       return;
     }
 
-    // 2. Validate form
+    // 2. Minimum Bid Check
+    if (this.bidAmount <= currentPrice) {
+      this.toastService.show(`Bid too low! Must be higher than ${currentPrice} XP.`, "warning");
+      return;
+    }
+
+    // 3. API Call
+    this.itemService.placeBid(this.selectedItem.id, this.user.id, this.bidAmount).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.toastService.show("Bid Successful! You are currently the highest bidder.", "success");
+
+          // Visual feedback: Deduct points locally
+          this.user.points -= this.bidAmount!;
+          localStorage.setItem('user', JSON.stringify(this.user));
+
+          this.loadMarketplace(); // Refresh lists
+
+          // Close Modal
+          const modalElement = document.getElementById('bidModal');
+          const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+          if (modal) modal.hide();
+        } else {
+          this.toastService.show(res.message || "Bid failed.", "error");
+        }
+      },
+      error: () => this.toastService.show("Server error. Could not place bid.", "error")
+    });
+  }
+
+  /**
+   * ITEM POSTING LOGIC
+   */
+  submitItem() {
+    if (this.user.status === 'blocked') {
+      this.toastService.show(`Blocked: ${this.user.block_reason || 'Guidelines violation'}`, "error");
+      return;
+    }
+
     if (!this.newItem.name || !this.newItem.category || !this.newItem.price || !this.newItem.image) {
-      alert("All fields are required!");
+      this.toastService.show("All fields are required to list an item.", "warning");
       return;
     }
 
@@ -198,38 +206,17 @@ ngOnInit() {
     formData.append('user_id', this.user.id);
 
     this.itemService.postItem(formData).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.status === 'success') {
-          alert("Impeccable! Your item is now live.");
+          this.toastService.show("Impeccable! Your item is now live.", "success");
           this.resetForm();
           this.loadMarketplace();
         } else {
-          alert("Upload issue: " + res.message);
+          this.toastService.show(res.message, "error");
         }
       },
-      error: (err) => alert("Upload failed. Check your PHP connection.")
+      error: () => this.toastService.show("Upload failed. Check PHP connection.", "error")
     });
-  }
-
-  getFormattedPrice(price: number | null, type: string): string {
-    if (price === null) return '';
-    return type === 'dollars' ? `$${price}` : `${price}`;
-  }
-
-  resetForm() {
-    this.newItem = {
-      name: '',
-      category: '',
-      price: null,
-      currencyType: 'points',
-      image: null
-    };
-    this.imagePreview = null;
-  }
-
-  logout() {
-    localStorage.removeItem('user');
-    this.router.navigate(['/login']);
   }
 
   toggleLike(item: any) {
@@ -242,8 +229,28 @@ ngOnInit() {
         item.isLiked = !item.isLiked;
         item.likes = Number(item.likes) + (item.isLiked ? 1 : -1);
         this.cdr.detectChanges();
-        console.error("Could not sync like state:", err);
+        console.error("Like sync error", err);
       }
     });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.newItem.image = file;
+      const reader = new FileReader();
+      reader.onload = () => this.imagePreview = reader.result;
+      reader.readAsDataURL(file);
+    }
+  }
+
+  resetForm() {
+    this.newItem = { name: '', category: '', price: null, currencyType: 'points', image: null };
+    this.imagePreview = null;
+  }
+
+  logout() {
+    localStorage.removeItem('user');
+    this.router.navigate(['/login']);
   }
 }
