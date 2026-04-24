@@ -136,6 +136,28 @@ markNotificationsAsRead(userId: number): Observable<any> {
   return this.http.post(`${this.apiUrl}/mark_notifications_read.php`, { user_id: userId });
 }
 
+sendWinnerNotification(userId: number, itemId: number, itemName: string) {
+  return this.http.post(`${this.apiUrl}/notify_winner.php`, {
+    user_id: userId,
+    item_id: itemId,
+    item_name: itemName
+  });
+}
+
+
+sendMessageInquiry(senderId: number, ownerId: number, itemId: number, message: string) {
+  return this.http.post(`${this.apiUrl}/send_inquiry.php`, {
+    sender_id: senderId,
+    owner_id: ownerId,
+    item_id: itemId,
+    message: message
+  });
+}
+
+
+
+
+
 
 
 }

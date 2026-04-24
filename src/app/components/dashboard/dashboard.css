@@ -253,11 +253,11 @@
 
 /* Modal Customization */
 .retro-modal {
-  border-radius: 0;
-  border: 2px solid #000;
-  padding: 20px;
+    background-color: #ffffff !important;
+    border: 3px solid #000000 !important;
+    border-radius: 0 !important; /* Sharp corners for pixel feel */
+    padding: 10px;
 }
-
 .pixel-text-sm {
   font-family: 'Press Start 2P', cursive;
   font-size: 0.9rem;
@@ -752,8 +752,24 @@ button:disabled {
 
 /* Icon specific colors based on TYPE */
 .notif-item.like .notif-icon-container { color: #ff4757; }
-.notif-item.outbid .notif-icon-container { color: #f1c40f; }
-.notif-item.won .notif-icon-container { color: #2ecc71; }
+.notif-item.outbid .notif-icon-container { color: #f1c40f;
+
+  /* Green background for Wins */
+.notif-item.won {
+  background-color: #e8f5e9; /* Light Green */
+  border-left: 4px solid #2e7d32;
+}
+
+/* Tan background for Refunds */
+.notif-item.outbid {
+  background-color: #fffde7; /* Light Yellow/Tan */
+  border-left: 4px solid #fbc02d;
+}
+
+/* Bold the Item Name within the message */
+.notif-message {
+  font-weight: 500;
+}
 
 /* Empty state */
 .empty-notif {
@@ -771,4 +787,165 @@ button:disabled {
 .custom-scroll::-webkit-scrollbar { width: 6px; }
 .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
 .custom-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
-.custom-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: #555; };
+
+}
+
+.notif-item.message {
+  background-color: #e3f2fd; /* Light Blue */
+  border-left: 4px solid #1976d2;
+}
+
+.notif-item.message .notif-icon-container {
+  color: #1976d2;
+}
+
+
+.popular-card {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.popular-card:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
+
+
+/* Matching your Bidding Modal design */
+.retro-modal {
+    background-color: #ffffff !important;
+    border: 3px solid #000000 !important;
+    border-radius: 0 !important; /* Sharp corners for pixel feel */
+    padding: 10px;
+}
+
+/* Override the warning text to a dark pixel font */
+.retro-modal .pixel-font.text-warning {
+    color: #000000 !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 2. Close Button Override */
+.btn-close-white {
+    filter: invert(1) grayscale(1) brightness(0); /* Turns white X into black X */
+}
+
+
+/* Yellow Button (The "Good Sample" style) */
+.btn-yellow {
+  background: #f1c40f;
+  border: none;
+  border-bottom: 4px solid #c29d0b;
+  color: #000;
+  font-family: var(--pixel-font), sans-serif;
+  font-weight: bold;
+  padding: 10px;
+  text-transform: uppercase;
+  transition: all 0.1s;
+}
+
+.btn-yellow:hover {
+  background: #f39c12;
+  transform: translateY(2px);
+  border-bottom: 2px solid #c29d0b;
+}
+
+.btn-yellow:active {
+  transform: translateY(4px);
+  border-bottom: 0;
+}
+
+/* Smaller version for the input group */
+.btn-yellow-sm {
+  background: #f1c40f;
+  border: none;
+  border-bottom: 3px solid #c29d0b;
+  font-family: var(--pixel-font), sans-serif;
+  font-size: 10px;
+  padding: 5px 15px;
+}
+
+/* Image container with pixel border */
+.border-pixel {
+    border: 3px solid #000000;
+    padding: 5px;
+    background: #f8f9fa;
+    display: inline-block;
+}
+
+.coin-icon-lg {
+  width: 24px;
+  vertical-align: middle;
+}
+.text-light {
+    color: #333333 !important; /* Make description dark */
+}
+
+.text-muted {
+    color: #666666 !important;
+}
+
+/* 5. The "Pixel Perfect" Yellow Button */
+.retro-btn.btn-yellow {
+    background: #f1c40f;
+    color: #000;
+    border: 2px solid #000;
+    border-bottom: 5px solid #000; /* 3D depth effect */
+    font-family: var(--pixel-font), sans-serif;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.retro-btn.btn-yellow:hover {
+    background: #ffdb4d;
+    transform: translateY(-2px);
+    border-bottom: 7px solid #000;
+}
+
+.retro-btn.btn-yellow:active {
+    transform: translateY(3px);
+    border-bottom: 2px solid #000;
+}
+
+/* Small button version */
+.retro-btn.btn-yellow-sm {
+    background: #f1c40f;
+    color: #000;
+    border: 2px solid #000;
+    border-bottom: 4px solid #000;
+    font-family: var(--pixel-font), sans-serif;
+    font-size: 11px;
+    padding: 5px 15px;
+}
+
+
+.retro-input {
+    background: #ffffff;
+    border: 2px solid #000;
+    border-radius: 0;
+    padding: 10px;
+    color: #000;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.retro-input:focus {
+    outline: none;
+    background: #fffdf0; /* Subtle yellow tint on focus */
+    border-color: #f1c40f;
+}
+
+/* 7. Backdrop (Softer shadow for light theme) */
+.modal-backdrop.show {
+    opacity: 0.4 !important;
+    background-color: #000;
+}
+
+/* Coin icon sizing */
+.coin-icon-lg {
+    width: 24px;
+    margin-left: 5px;
+}

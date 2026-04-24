@@ -162,56 +162,62 @@
     </div>
   </section>
 
-  <section class="most-popular mt-5">
-    <div class="section-header d-flex justify-content-between align-items-center mb-4">
-      <h2 class="section-title">Marketplace</h2>
-      <a href="#" class="view-all">View all ></a>
-    </div>
+ <section class="most-popular mt-5">
+  <div class="section-header d-flex justify-content-between align-items-center mb-4">
+    <h2 class="section-title">Marketplace</h2>
+    <a href="#" class="view-all">View all ></a>
+  </div>
 
-    <div class="popular-grid" *ngIf="marketplaceItems.length > 0; else noMarket">
-      <div class="popular-card" *ngFor="let item of marketplaceItems">
-        <div class="popular-img-box">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
-               [alt]="item.name"
-               (error)="$any($event.target).src='/assets/placeholder.jpg'">
+  <div class="popular-grid" *ngIf="marketplaceItems.length > 0; else noMarket">
+    <div class="popular-card"
+         *ngFor="let item of marketplaceItems"
+         (click)="openItemDetail(item)"
+         style="cursor: pointer;">
+
+      <div class="popular-img-box">
+        <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+             [alt]="item.name"
+             (error)="$any($event.target).src='/assets/placeholder.jpg'">
+      </div>
+
+      <div class="popular-footer d-flex justify-content-between align-items-center p-3">
+        <div class="item-details">
+          <h3 class="pop-item-name">{{ item.name }}</h3>
+          <div class="pop-meta d-flex align-items-center">
+            <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
+            <span class="dot-separator mx-2">•</span>
+
+            <span class="pop-price">
+              <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
+              <ng-container *ngIf="item.currency_type === 'points'">
+                {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
+              </ng-container>
+            </span>
+          </div>
         </div>
 
-        <div class="popular-footer d-flex justify-content-between align-items-center p-3">
-          <div class="item-details">
-            <h3 class="pop-item-name">{{ item.name }}</h3>
-            <div class="pop-meta d-flex align-items-center">
-              <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
-              <span class="dot-separator mx-2">•</span>
-
-              <span class="pop-price">
-                <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
-                <ng-container *ngIf="item.currency_type === 'points'">
-                  {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
-                </ng-container>
-              </span>
-            </div>
-          </div>
-
-          <div class="like-container d-flex align-items-center" (click)="toggleLike(item)" style="cursor: pointer;">
-            <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
-              <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
-            </svg>
-            <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
-          </div>
+        <div class="like-container d-flex align-items-center"
+             (click)="toggleLike(item); $event.stopPropagation()"
+             style="cursor: pointer;">
+          <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
+            <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
+          </svg>
+          <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <ng-template #noMarket>
-      <div class="empty-state-container">
-        <div class="d-flex flex-column justify-content-center align-items-center text-center">
-          <i class="bi bi-controller fs-1 text-muted mb-3"></i>
-          <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
-          <p class="text-muted">Try changing your filters or searching for something else.</p>
-        </div>
+  <ng-template #noMarket>
+    <div class="empty-state-container">
+      <div class="d-flex flex-column justify-content-center align-items-center text-center">
+        <i class="bi bi-controller fs-1 text-muted mb-3"></i>
+        <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
+        <p class="text-muted">Try changing your filters or searching for something else.</p>
       </div>
-    </ng-template>
-  </section>
+    </div>
+  </ng-template>
+</section>
 </div>
 
 <div class="modal fade" id="postItemModal" tabindex="-1" aria-hidden="true">
@@ -312,3 +318,55 @@
     </div>
   </div>
 </div>
+<!--   Modal fo the items in market place-->
+<div class="modal fade show d-block" *ngIf="selectedMarketItem">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content retro-modal shadow-lg">
+
+      <div class="modal-header border-0 pb-0">
+        <h5 class="pixel-font text-warning m-0">{{ selectedMarketItem.name }}</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="selectedMarketItem = null"></button>
+      </div>
+
+      <div class="modal-body text-center pt-2">
+        <div class="modal-img-container mb-3 border-pixel">
+          <img [src]="'http://localhost/retroid/public/items/' + selectedMarketItem.image_path"
+               class="img-fluid rounded shadow-sm"
+               (error)="$any($event.target).src='/assets/placeholder.jpg'">
+        </div>
+
+        <div class="price-display mb-3">
+          <span class="pixel-font-sm text-muted">ASKING PRICE: </span>
+          <h3 class="pixel-font text-success d-inline">
+            <ng-container *ngIf="selectedMarketItem.currency_type === 'dollars'">$</ng-container>
+            {{ selectedMarketItem.price }}
+            <img *ngIf="selectedMarketItem.currency_type === 'points'" src="/coin.svg" class="coin-icon-lg" alt="coins">
+          </h3>
+        </div>
+
+        <p class="text-light pixel-font-xs mb-4 opacity-75">
+          {{ selectedMarketItem.description || 'This rare artifact was recently discovered in the Retroid vaults.' }}
+        </p>
+
+        <div class="d-flex flex-column gap-3 px-3">
+          <button class="retro-btn btn-yellow w-100" (click)="sendInquiry(selectedMarketItem)">
+            <i class="bi bi-chat-dots me-2"></i> I'm interested
+          </button>
+
+          <div class="custom-offer-group d-flex">
+            <input type="text" [(ngModel)]="customMessage" class="retro-input flex-grow-1" placeholder="Type an offer...">
+            <button class="retro-btn btn-yellow-sm ms-2" (click)="sendInquiry(selectedMarketItem, customMessage)">
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <small class="text-muted pixel-font-xs">Owner: {{ selectedMarketItem.username }}</small>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="selectedMarketItem" (click)="selectedMarketItem = null"></div>
+<div class="modal-backdrop fade show" *ngIf="selectedMarketItem"></div>

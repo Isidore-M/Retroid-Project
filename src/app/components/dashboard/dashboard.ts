@@ -139,11 +139,16 @@ this.itemService.getItems(this.user.id).subscribe({
       this.biddingItems.forEach(item => {
         if (item.expiry_time) {
           const end = new Date(item.expiry_time).getTime();
+          const now = new Date().getTime();
           if (end < now && Number(item.highest_bidder_id) === Number(this.user.id)) {
-            if (!item.hasNotified) {
-              this.toastService.show(`CONGRATULATIONS! You won the ${item.name}!`, "success");
-              item.hasNotified = true;
-            }
+      if (!item.hasNotified) {
+        this.toastService.show(`CONGRATULATIONS! You won the ${item.name}!`, "success");
+
+        // Trigger the DB notification so it shows in the panel
+        this.itemService.sendWinnerNotification(this.user.id, item.id, item.name).subscribe();
+
+        item.hasNotified = true;
+      }
           }
         }
       });
@@ -397,7 +402,31 @@ private getTimeRemaining(ms: number): string {
 
 // Helper to format the time (HH:MM:SS)
 
+selectedMarketItem: any = null;
+customMessage: string = '';
 
+// Call this when an item card is clicked
+openItemDetail(item: any) {
+  this.selectedMarketItem = item;
+  this.cdr.detectChanges();
+}
+
+sendInquiry(item: any, customMsg?: string) {
+  const message = customMsg || "I'm interested, can we make a deal?";
+
+  this.itemService.sendMessageInquiry(this.user.id, item.user_id, item.id, message).subscribe({
+    next: (res: any) => {
+      if (res.status === 'success') {
+        this.toastService.show("Message sent to owner!", "success");
+        this.selectedMarketItem = null;
+        this.customMessage = '';
+        // Refresh notifications in case we have a response later
+        this.loadMarketplace();
+      }
+    },
+    error: (err) => console.error("Inquiry failed", err)
+  });
+}
 
 
 
