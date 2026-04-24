@@ -128,7 +128,13 @@ getAllUsers(): Observable<any> {
 
 
 
+getNotifications(userId: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/get_notifications.php?user_id=${userId}`);
+}
 
+markNotificationsAsRead(userId: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/mark_notifications_read.php`, { user_id: userId });
+}
 
 
 

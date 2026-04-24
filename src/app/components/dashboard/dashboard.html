@@ -36,11 +36,57 @@
       </div>
 
       <div class="nav-icons ms-4 d-flex align-items-center">
-        <button class="icon-btn"><i class="bi bi-sliders"></i></button>
-        <button class="icon-btn position-relative me-2">
-          <i class="bi bi-bell"></i>
-          <span class="notif-dot"></span>
-        </button>
+        <div class="notif-wrapper position-relative me-3">
+  <button class="icon-btn" (click)="toggleNotificationDropdown()">
+    <i class="bi bi-bell"></i>
+    <span class="notif-badge pixel-font" *ngIf="unreadCount > 0">
+      {{ unreadCount > 9 ? '9+' : unreadCount }}
+    </span>
+  </button>
+
+  <div class="notif-dropdown shadow-lg"
+       *ngIf="showNotifDropdown"
+       (click)="$event.stopPropagation()">
+
+    <div class="notif-header d-flex justify-content-between align-items-center">
+      <h6 class="m-0 pixel-font-sm">Notifications</h6>
+      <button class="btn-mark-read pixel-font"
+              *ngIf="unreadCount > 0"
+              (click)="markAllAsRead()">
+        Mark as read
+      </button>
+    </div>
+
+    <div class="notif-body custom-scroll">
+      <div class="notif-item d-flex align-items-start"
+           *ngFor="let n of notifications"
+           [class.unread]="n.is_read == 0"
+           [ngClass]="n.type">
+
+        <div class="notif-icon-container">
+          <i class="bi" [ngClass]="{
+            'bi-heart-fill': n.type === 'like',
+            'bi-hammer': n.type === 'outbid',
+            'bi-trophy-fill': n.type === 'won',
+            'bi-cash-coin': n.type === 'sold'
+          }"></i>
+        </div>
+
+        <div class="notif-content ms-3">
+          <p class="notif-message m-0">{{ n.message }}</p>
+          <small class="notif-time text-muted">
+            {{ n.created_at | date:'shortTime' }}
+          </small>
+        </div>
+      </div>
+
+      <div *ngIf="notifications.length === 0" class="empty-notif text-center p-4">
+        <i class="bi bi-mailbox2 d-block fs-1 text-muted mb-2"></i>
+        <span class="text-muted pixel-font-sm">No new data.</span>
+      </div>
+    </div>
+  </div>
+</div>
         <button class="btn-logout ms-2" (click)="logout()">
           <i class="bi bi-power"></i>
           <span class="logout-text ms-1">Exit</span>
@@ -63,21 +109,33 @@
     </div>
 
     <div class="item-grid" *ngIf="biddingItems && biddingItems.length > 0; else noArtifacts">
-            <div class="item-card-mini" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)">
-        <div class="card-img-box">
-          <div class="high-bid-tag">
-            {{ item.current_bid || item.price }} XP
-          </div>
 
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
-              (error)="$any($event.target).src='/assets/placeholder.jpg'">
-        </div>
-        <div class="card-info d-flex justify-content-between align-items-center mt-2">
-          <span class="item-name text-truncate">{{ item.name }}</span>
-          <span class="item-cat text-muted" style="font-size: 0.7rem;">{{ item.category }}</span>
-        </div>
-      </div>
+ <div class="item-card-mini" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)">
+  <div class="card-img-box">
+    <div class="high-bid-tag">
+      {{ item.current_bid || item.price }} XP
     </div>
+
+    <div class="timer-tag" [class.ending-soon]="item.isEndingSoon">
+      <p class="bidtime"> Bid expires in <i class="bi bi-clock-history me-1"></i> {{ item.displayTimer || '--:--:--' }} </p>
+    </div>
+
+    <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+         (error)="$any($event.target).src='/assets/placeholder.jpg'">
+  </div>
+
+  <div class="card-info d-flex justify-content-between align-items-center mt-2">
+    <div class="info-left">
+      <span class="item-name text-truncate d-block">{{ item.name }}</span>
+      <span class="item-status">Artifact</span> </div>
+    <span class="item-cat text-muted">{{ item.category }}</span>
+  </div>
+</div>
+
+</div>
+
+
+
     <ng-template #noArtifacts>
       <div class="text-center p-4 border-dashed rounded">
         <p class="text-muted mb-0">No active bidding artifacts found.</p>
@@ -178,10 +236,20 @@
               <option value="Others">Others</option>
             </select>
           </div>
-          <div class="form-group mb-3">
-            <label class="pixel-label">Price</label>
-            <input type="number" [(ngModel)]="newItem.price" class="retro-input w-100" placeholder="0">
-          </div>
+         <div class="form-group mb-3">
+  <label class="pixel-label">Price & Currency</label>
+  <div class="d-flex gap-2">
+    <input type="number"
+           [(ngModel)]="newItem.price"
+           class="retro-input flex-grow-1"
+           placeholder="0.00">
+
+    <select [(ngModel)]="newItem.currencyType" class="retro-input currency-select">
+      <option value="points">XP</option>
+      <option value="dollars">$ USD</option>
+    </select>
+  </div>
+</div>
           <div class="form-group mb-4">
             <label class="pixel-label">Asset Image</label>
             <input type="file" (change)="onFileSelected($event)" class="form-control-file">

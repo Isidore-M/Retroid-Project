@@ -1,45 +1,67 @@
 <?php
-ob_start();
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Content-Type: application/json; charset=UTF-8");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200); ob_end_clean(); exit;
+    http_response_code(200); exit;
 }
 
 require_once dirname(__FILE__) . '/../config/database.php';
+
 $data = json_decode(file_get_contents("php://input"));
 
-$user_id = $data->user_id ?? null;
-$item_id = $data->item_id ?? null;
+if (!empty($data->item_id) && !empty($data->user_id)) {
+    $item_id = (int)$data->item_id;
+    $user_id = (int)$data->user_id;
 
-if ($user_id && $item_id) {
-    try {
-        // 1. Check if the user already liked this item
-        $check = $conn->prepare("SELECT * FROM item_likes WHERE user_id = :uid AND item_id = :iid");
-        $check->execute(['uid' => $user_id, 'iid' => $item_id]);
+    // 1. Check current status
+    $check = $conn->prepare("SELECT id FROM item_likes WHERE item_id = ? AND user_id = ?");
+    $check->execute([$item_id, $user_id]);
+    $alreadyLiked = $check->fetch();
 
-        if ($check->rowCount() > 0) {
-            // UNLIKE: Remove the record and subtract 1 from the item
-            $conn->prepare("DELETE FROM item_likes WHERE user_id = :uid AND item_id = :iid")->execute(['uid' => $user_id, 'iid' => $item_id]);
-            $conn->prepare("UPDATE items SET likes = likes - 1 WHERE id = :iid")->execute(['iid' => $item_id]);
-            $action = 'unliked';
-        } else {
-            // LIKE: Add the record and add 1 to the item
-            $conn->prepare("INSERT INTO item_likes (user_id, item_id) VALUES (:uid, :iid)")->execute(['uid' => $user_id, 'iid' => $item_id]);
-            $conn->prepare("UPDATE items SET likes = likes + 1 WHERE id = :iid")->execute(['iid' => $item_id]);
-            $action = 'liked';
+    if ($alreadyLiked) {
+        // UNLIKE
+        $conn->prepare("DELETE FROM item_likes WHERE item_id = ? AND user_id = ?")->execute([$item_id, $user_id]);
+        $conn->prepare("UPDATE items SET likes = GREATEST(0, likes - 1) WHERE id = ?")->execute([$item_id]);
+        $status = "unliked";
+    } else {
+        // LIKE
+        $conn->prepare("INSERT INTO item_likes (item_id, user_id) VALUES (?, ?)")->execute([$item_id, $user_id]);
+        $conn->prepare("UPDATE items SET likes = likes + 1 WHERE id = ?")->execute([$item_id]);
+        $status = "liked";
+
+        // 2. Try Notification (wrapped in its own try-catch so it doesn't kill the Like)
+        try {
+            $itemQuery = $conn->prepare("SELECT user_id as owner_id, name FROM items WHERE id = ?");
+            $itemQuery->execute([$item_id]);
+            $item = $itemQuery->fetch(PDO::FETCH_ASSOC);
+
+            $userQuery = $conn->prepare("SELECT username FROM users WHERE id = ?");
+            $userQuery->execute([$user_id]);
+            $liker = $userQuery->fetch(PDO::FETCH_ASSOC);
+
+            if ($item && $liker && $item['owner_id'] != $user_id) {
+                $msg = $liker['username'] . " liked your item: " . $item['name'];
+                $notif = $conn->prepare("INSERT INTO notifications (user_id, sender_id, item_id, type, message, is_read) VALUES (?, ?, ?, 'like', ?, 0)");
+                $notif->execute([$item['owner_id'], $user_id, $item_id, $msg]);
+            }
+        } catch (Exception $e) {
+            // Silently fail notification so the LIKE still works
         }
-
-        ob_end_clean();
-        echo json_encode(["status" => "success", "action" => $action]);
-    } catch (Exception $e) {
-        ob_end_clean();
-        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
     }
+
+    // 3. Final Count
+    $count = $conn->prepare("SELECT COUNT(*) FROM item_likes WHERE item_id = ?");
+    $count->execute([$item_id]);
+    $newCount = $count->fetchColumn();
+
+    echo json_encode([
+        "status" => "success",
+        "action" => $status,
+        "new_count" => (int)$newCount
+    ]);
 } else {
-    ob_end_clean();
-    echo json_encode(["status" => "error", "message" => "Missing user or item ID."]);
+    echo json_encode(["status" => "error", "message" => "Missing IDs"]);
 }

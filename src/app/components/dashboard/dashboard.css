@@ -49,7 +49,8 @@
   background: none;
   border: none;
   font-size: 1.3rem;
-  color: #333;
+  color: #080808;
+  border: 1px solid #000;
   padding: 5px;
   transition: color 0.2s;
   cursor: pointer;
@@ -149,6 +150,7 @@
   overflow: hidden;
   position: relative; /* Anchor for the tag */
   border: 1px solid #333;
+
 
 }
 .card-img-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -325,13 +327,20 @@
 }
 
 .currency-select {
-  border: 1px solid #eee;
-  background: #f1f1f1;
-  padding: 0 15px;
-  border-radius: 0 30px 30px 0; /* Rounded on the RIGHT to fit against the input */
+  width: 80px;
+  background-color: #f8f9fa;
+  cursor: pointer;
   font-weight: bold;
-  font-size: 0.8rem;
-  outline: none;
+  text-align: center;
+}
+
+.pixel-label {
+  display: block;
+  font-family: var(--pixel-font), sans-serif;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 5px;
 }
 
 .price-tag {
@@ -410,13 +419,7 @@
   gap: 10px;
 }
 
-.icon-btn {
-  background: transparent;
-  border: none;
-  padding: 5px;
-  cursor: pointer;
-  color: #333;
-}
+
 
 .icon-btn:hover {
   color: #f3a04b;
@@ -592,3 +595,180 @@ button:disabled {
   border-color: #333 !important;
   cursor: not-allowed;
 }
+
+.bidtime{
+
+ margin-bottom: 0;
+}
+
+
+.timer-tag {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(8, 8, 8, 0.922);
+  color: #ed9d09; /* Neon green digital look */
+  padding: 2px 6px;
+  font-family: 'Courier New', Courier, monospace; /* Or your pixel font */
+  font-size: 15px;
+  border: 1px solid #333;
+  z-index: 2;
+  margin: auto 0;
+  font-weight: 550;
+}
+
+.timer-tag.ending-soon {
+  color: #ff4757;
+  border-color: #ff4757;
+  animation: pulse-red 1s infinite;
+}
+
+@keyframes pulse-red {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+
+/* Container for the button + dropdown */
+.notif-wrapper {
+  display: inline-block;
+  z-index: 1000;
+}
+
+/* The Bell Icon Button */
+.icon-btn {
+  background: none;
+  border: none;
+  color: #383838;
+  font-size: 1.2rem;
+  padding: 5px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.icon-btn:hover {
+  color: #f1c40f; /* Yellow accent on hover */
+}
+
+/* Red Dot Badge */
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  background: #ff4757; /* Sharp Red */
+  color: white;
+  font-size: 8px; /* Pixel font size */
+  padding: 2px 4px;
+  border-radius: 2px; /* Sharp border radius */
+  line-height: 1;
+  border: 1px solid #000; /* Contrast border */
+}
+
+/* --- THE DROPDOWN --- */
+.notif-dropdown {
+  position: absolute;
+  top: 100%; /* Sits directly below the bell */
+  right: 0; /* Aligns to the right edge of the bell */
+  width: 320px;
+  max-height: 400px;
+  background: #fff; /* Solid White */
+  border: 2px solid #000; /* Sharp Retro Border */
+  border-radius: 4px;
+  margin-top: 10px; /* Gap between bell and menu */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1010;
+  animation: slideDownSmooth 0.2s ease-out;
+}
+
+/* Retro Header */
+.notif-header {
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-bottom: 2px solid #000;
+}
+
+.pixel-font-sm {
+  font-family: var(--pixel-font), sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #000;
+}
+
+/* Mark as read button */
+.btn-mark-read {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0;
+}
+.btn-mark-read:hover { text-decoration: underline; }
+
+/* Body container */
+.notif-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* --- THE NOTIFICATION ITEM --- */
+.notif-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #939393;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notif-item:hover {
+  background: #fdfdfd;
+}
+
+/* Specific styling for unread items (match your video green) */
+.notif-item.unread {
+  background: rgba(40, 167, 69, 0.05); /* Light Green background */
+  border-left: 3px solid #28a745; /* Green active bar */
+}
+
+/* Icons */
+.notif-icon-container {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Message Text */
+.notif-message {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 11px;
+}
+
+/* Icon specific colors based on TYPE */
+.notif-item.like .notif-icon-container { color: #ff4757; }
+.notif-item.outbid .notif-icon-container { color: #f1c40f; }
+.notif-item.won .notif-icon-container { color: #2ecc71; }
+
+/* Empty state */
+.empty-notif {
+  font-family: var(--pixel-font), sans-serif;
+  color: #999;
+}
+
+/* Smooth slide down animation */
+@keyframes slideDownSmooth {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Retro Scrollbar */
+.custom-scroll::-webkit-scrollbar { width: 6px; }
+.custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+.custom-scroll::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: #555; }
