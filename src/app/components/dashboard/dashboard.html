@@ -348,18 +348,18 @@
           {{ selectedMarketItem.description || 'This rare artifact was recently discovered in the Retroid vaults.' }}
         </p>
 
-        <div class="d-flex flex-column gap-3 px-3">
-          <button class="retro-btn btn-yellow w-100" (click)="sendInquiry(selectedMarketItem)">
-            <i class="bi bi-chat-dots me-2"></i> I'm interested
-          </button>
-
-          <div class="custom-offer-group d-flex">
-            <input type="text" [(ngModel)]="customMessage" class="retro-input flex-grow-1" placeholder="Type an offer...">
-            <button class="retro-btn btn-yellow-sm ms-2" (click)="sendInquiry(selectedMarketItem, customMessage)">
-              Send
+                  <div class="d-flex flex-column gap-3 px-3">
+            <button type="button" class="retro-btn btn-yellow w-100" (click)="sendInquiry(selectedMarketItem)">
+              <i class="bi bi-chat-dots me-2"></i> I'm interested
             </button>
+
+            <div class="custom-offer-group d-flex">
+              <input type="text" [(ngModel)]="customMessage" class="retro-input flex-grow-1" placeholder="Type an offer...">
+              <button type="button" class="retro-btn btn-yellow-sm ms-2" (click)="sendInquiry(selectedMarketItem, customMessage)">
+                Send
+              </button>
+            </div>
           </div>
-        </div>
       </div>
 
       <div class="modal-footer border-0 pt-0">

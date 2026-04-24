@@ -154,7 +154,15 @@ sendMessageInquiry(senderId: number, ownerId: number, itemId: number, message: s
   });
 }
 
+// 1. Get the list of people you are talking to
+getChatList(userId: number) {
+  return this.http.get(`${this.apiUrl}/get_messages.php?user_id=${userId}`);
+}
 
+// 2. Get the specific messages between you and one person for one item
+getChatHistory(userId: number, partnerId: number, itemId: number) {
+  return this.http.get(`${this.apiUrl}/get_chat_history.php?user_id=${userId}&partner_id=${partnerId}&item_id=${itemId}`);
+}
 
 
 

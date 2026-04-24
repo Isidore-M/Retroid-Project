@@ -412,22 +412,31 @@ openItemDetail(item: any) {
 }
 
 sendInquiry(item: any, customMsg?: string) {
+  console.log("sendInquiry triggered for item:", item.id); // DEBUG 1
+
   const message = customMsg || "I'm interested, can we make a deal?";
+
+  if (!this.user || !this.user.id) {
+    console.error("User not logged in!");
+    return;
+  }
 
   this.itemService.sendMessageInquiry(this.user.id, item.user_id, item.id, message).subscribe({
     next: (res: any) => {
+      console.log("Server Response:", res); // DEBUG 2
       if (res.status === 'success') {
         this.toastService.show("Message sent to owner!", "success");
-        this.selectedMarketItem = null;
+        this.selectedMarketItem = null; // This closes the modal
         this.customMessage = '';
-        // Refresh notifications in case we have a response later
-        this.loadMarketplace();
+      } else {
+        console.warn("Server returned error:", res.message);
       }
     },
-    error: (err) => console.error("Inquiry failed", err)
+    error: (err) => {
+      console.error("HTTP Error occurred:", err); // DEBUG 3
+    }
   });
 }
-
 
 
 

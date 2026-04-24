@@ -1,0 +1,56 @@
+<div class="message-center-container p-4">
+  <div class="row g-0 retro-border-main">
+
+    <div class="col-md-4 border-end border-dark inbox-list">
+      <div class="inbox-header p-3 border-bottom border-dark bg-light">
+        <h5 class="pixel-font m-0">Inbox</h5>
+      </div>
+
+      <div class="chat-items">
+        <div class="chat-card p-3 d-flex align-items-center"
+             *ngFor="let chat of chatList"
+             (click)="selectChat(chat)"
+             [class.active]="selectedChat?.id === chat.id">
+          <img [src]="'http://localhost/retroid/public/items/' + chat.image_path" class="chat-thumb me-3">
+          <div class="chat-info overflow-hidden">
+            <h6 class="pixel-font-sm mb-0">{{ chat.partner_name }}</h6>
+            <small class="text-muted d-block text-truncate">{{ chat.message_text }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8 d-flex flex-column bg-white">
+      <div *ngIf="selectedChat; else noChatSelected" class="h-100 d-flex flex-column">
+        <div class="conversation-header p-3 border-bottom border-dark d-flex justify-content-between">
+          <h6 class="pixel-font m-0">Chat with {{ selectedChat.partner_name }}</h6>
+          <span class="badge bg-warning text-dark">{{ selectedChat.item_name }}</span>
+        </div>
+
+        <div class="message-bubbles p-3 flex-grow-1 overflow-auto">
+          <div *ngFor="let msg of activeMessages"
+               [ngClass]="msg.sender_id == user.id ? 'msg-sent' : 'msg-received'">
+            <div class="bubble-content p-2 mb-2">
+              {{ msg.message_text }}
+              <small class="d-block text-end opacity-50">{{ msg.created_at | date:'shortTime' }}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="message-input-area p-3 border-top border-dark">
+          <div class="input-group">
+            <input type="text" [(ngModel)]="replyText" (keyup.enter)="sendReply()" class="retro-input flex-grow-1" placeholder="Type a reply...">
+            <button class="retro-btn btn-yellow-sm" (click)="sendReply()">SEND</button>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noChatSelected>
+        <div class="d-flex flex-column justify-content-center align-items-center h-100 opacity-50">
+          <i class="bi bi-chat-left-text fs-1"></i>
+          <p class="pixel-font-sm mt-2">Select a conversation to start dealing</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
