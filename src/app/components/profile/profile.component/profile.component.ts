@@ -1,13 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // 👈 IMPORTANT: Add this for [(ngModel)]
+import { RouterModule, Router, ActivatedRoute } from '@angular/router'; // 👈 Added ActivatedRoute
+import { FormsModule } from '@angular/forms';
 import { ItemService } from '../../../services/item';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule], // 👈 Added FormsModule here
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
@@ -18,29 +18,116 @@ export class ProfileComponent implements OnInit {
   myItems: any[] = [];
   likedItems: any[] = [];
 
-  // Form State
-  editUsername: string = ''; // 👈 Holds the temporary value for the input field
+  // --- NEW: Message Center Data ---
+  chatList: any[] = [];
+  activeMessages: any[] = [];
+  selectedChat: any = null;
+  replyText: string = '';
 
-  // UI State
-  activeTab: 'info' | 'listings' | 'notifications' = 'info';
+  // Form State
+  editUsername: string = '';
+
+  // UI State - 👈 Updated to include 'messages' and 'biddings'
+  activeTab: 'info' | 'listings' | 'notifications' | 'messages' | 'biddings' = 'info';
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute, // 👈 Added for notification deep-linking
     private itemService: ItemService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      this.user = JSON.parse(savedUser);
-      this.editUsername = this.user.username; // Initialize the edit field immediately
-      this.loadProfileData();
-    } else {
-      this.router.navigate(['/login']);
-    }
+ngOnInit() {
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
+    this.user = JSON.parse(savedUser);
+    this.editUsername = this.user.username;
+    this.loadProfileData();
+
+    // 1. Load the inbox first
+    this.itemService.getChatList(this.user.id).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.chatList = res.chats;
+
+          // 2. NOW check the URL parameters
+          this.route.queryParams.subscribe(params => {
+            if (params['tab'] === 'messages') {
+              this.activeTab = 'messages';
+
+              // 3. If we have a partnerId, find and select that chat automatically
+              if (params['partnerId'] && params['itemId']) {
+                const autoChat = this.chatList.find(c =>
+                  (c.sender_id == params['partnerId'] || c.receiver_id == params['partnerId']) &&
+                  c.item_id == params['itemId']
+                );
+
+                if (autoChat) {
+                  this.selectChat(autoChat);
+                }
+              }
+            }
+          });
+          this.cdr.detectChanges();
+        }
+      }
+    });
+  }
+}
+
+  // --- NEW: Message Center Methods ---
+  loadInbox() {
+    this.itemService.getChatList(this.user.id).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.chatList = res.chats;
+          this.cdr.detectChanges();
+        }
+      }
+    });
   }
 
+  selectChat(chat: any) {
+    this.selectedChat = chat;
+    this.loadConversation();
+  }
+
+  loadConversation() {
+    if (!this.selectedChat) return;
+    const partnerId = (this.selectedChat.sender_id == this.user.id)
+                      ? this.selectedChat.receiver_id : this.selectedChat.sender_id;
+
+    this.itemService.getChatHistory(this.user.id, partnerId, this.selectedChat.item_id).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.activeMessages = res.messages;
+          this.cdr.detectChanges();
+        }
+      }
+    });
+  }
+
+  sendReply() {
+    if (!this.replyText.trim() || !this.selectedChat) return;
+    const partnerId = (this.selectedChat.sender_id == this.user.id)
+                      ? this.selectedChat.receiver_id : this.selectedChat.sender_id;
+
+    this.itemService.sendMessageInquiry(this.user.id, partnerId, this.selectedChat.item_id, this.replyText).subscribe({
+      next: (res: any) => {
+        if (res.status === 'success') {
+          this.activeMessages.push({
+            sender_id: this.user.id,
+            message_text: this.replyText,
+            created_at: new Date().toISOString()
+          });
+          this.replyText = '';
+          this.cdr.detectChanges();
+        }
+      }
+    });
+  }
+
+  // --- EXISTING METHODS (Untouched) ---
   loadProfileData() {
     this.itemService.getUserProfile(this.user.id).subscribe({
       next: (res) => {
@@ -57,54 +144,43 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  /**
-   * Saves the updated username to the database
-   */
   saveInfo() {
     if (!this.editUsername.trim() || this.editUsername === this.user.username) {
-      return; // Don't save if empty or unchanged
+      return;
     }
-
     this.itemService.updateUserInfo(this.user.id, this.editUsername).subscribe({
       next: (res) => {
         if (res.status === 'success') {
-          // 1. Update the local object
           this.user.username = this.editUsername;
-
-          // 2. Sync with localStorage so the navbar updates too
           localStorage.setItem('user', JSON.stringify(this.user));
-
-          alert("Profile updated! Your new handle is now live.");
+          alert("Profile updated!");
           this.cdr.detectChanges();
-        } else {
-          alert("Error: " + res.message);
         }
-      },
-      error: (err) => console.error("Update failed:", err)
+      }
     });
   }
 
-  /**
-   * Placeholder for Password logic
-   */
-  updatePassword() {
-    console.log("Password update triggered - logic coming soon!");
-    // We can build the api/update_password.php next
-  }
+  updatePassword() { console.log("Password update triggered"); }
 
-  setTab(tab: 'info' | 'listings' | 'notifications', event: Event) {
+  // 👈 Updated type here to match new tab list
+ setTab(tab: 'info' | 'listings' | 'notifications' | 'messages' | 'biddings', event?: Event) {
+  if (event) {
     event.preventDefault();
-    this.activeTab = tab;
+    event.stopPropagation();
   }
 
-  triggerBannerUpload() {
-    console.log("Banner edit clicked!");
+  console.log("Tab clicked:", tab); // Check your F12 console for this!
+  this.activeTab = tab;
+
+  if (tab === 'messages') {
+    this.loadInbox();
   }
 
-  triggerAvatarUpload() {
-    console.log("Avatar edit clicked!");
-  }
+  this.cdr.detectChanges();
+}
 
+  triggerBannerUpload() { console.log("Banner edit clicked!"); }
+  triggerAvatarUpload() { console.log("Avatar edit clicked!"); }
   logout() {
     localStorage.removeItem('user');
     this.router.navigate(['/login']);

@@ -438,7 +438,19 @@ sendInquiry(item: any, customMsg?: string) {
   });
 }
 
-
+// Inside your notification click handler
+viewNotification(notif: any) {
+  if (notif.type === 'message') {
+    // We pass the partner's ID and the specific item ID
+    this.router.navigate(['/profile'], {
+      queryParams: {
+        tab: 'messages',
+        partnerId: notif.sender_id,
+        itemId: notif.item_id
+      }
+    });
+  }
+}
 
 
 }

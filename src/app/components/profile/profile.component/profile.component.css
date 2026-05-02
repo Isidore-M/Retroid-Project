@@ -62,6 +62,7 @@ body {
   gap: 15px;
 }
 
+
 .pixel-action-btn {
   display: flex;
   align-items: center;
@@ -72,7 +73,8 @@ body {
   font-weight: 700;
   text-transform: lowercase;
   position: relative;
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto;
 }
 
 .badge-count {
@@ -272,3 +274,248 @@ body {
 .pixel-icon, .pixel-heart, .pixel-icon-inline { shape-rendering: crispedges; }
 .fade-in { animation: fadeIn 0.3s ease-in; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
+/* NEW MESSAGE CENTER STYLES */
+/* Fix the shell from exploding */
+.message-shell {
+  display: flex;
+  height: 500px; /* Fixed height for the message center */
+  background: #fff;
+  border: 1px solid #eeeeee;
+  margin: -30px; /* Full bleed into the canvas */
+  overflow: hidden;
+}
+
+/* Sidebar Styling */
+.interactions-column {
+  width: 250px;
+  background: #f8f8f8;
+  border-right: 1px solid #eeeeee;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-list {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.interaction-card {
+  display: flex;
+  padding: 12px;
+  gap: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.interaction-card.active-chat {
+  background: #fae5b1;
+  border-left: 4px solid #f39c12;
+}
+
+/* Avatar Containers - THIS FIXES THE GIANT IMAGES */
+.avatar-green-sm {
+  width: 40px;
+  height: 40px;
+  background: #a5d6a7;
+  border: 1px solid #000;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar-green-xs {
+  width: 30px;
+  height: 30px;
+  background: #a5d6a7;
+  border: 1px solid #000;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatar-green-sm img, .avatar-green-xs img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Chat Main Column */
+.chat-column {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+}
+
+.chat-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.bubbles-viewport {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Bubble Styling */
+.bubble-row { display: flex; gap: 10px; align-items: flex-end; }
+.bubble-row.sent { justify-content: flex-end; }
+
+.bubble-text {
+  padding: 10px 15px;
+  background: #fff;
+  border: 1px solid #ddd;
+  font-size: 13px;
+  max-width: 300px;
+}
+
+.sent .bubble-text {
+  background: #fae5b1;
+  border-color: #f39c12;
+}
+
+/* Input Row */
+.chat-input-row {
+  padding: 15px;
+  border-top: 1px solid #eeeeee;
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-row input {
+  flex-grow: 1;
+  border: 1px solid #eee;
+  padding: 8px 15px;
+  outline: none;
+}
+.interaction-card.active-chat {
+  background: #fae5b1; /* The light tan color from your screenshot */
+  border-left: 4px solid #f39c12;
+}
+
+.interactions-sidebar {
+  background: #f1f1f1; /* The specific light gray from the image */
+  border-right: 1px solid #dcdcdc;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header { padding: 20px; border-bottom: 1px solid #e0e0e0; }
+
+
+.interaction-card {
+  display: flex;
+  padding: 15px;
+  gap: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #e5e5e5;
+  transition: 0.2s;
+}
+
+.interactions-column {
+  border-right: 1px solid #eeeeee;
+  background: #fbfbfb;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-header {
+  padding: 20px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.chat-list { overflow-y: auto; flex-grow: 1; }
+
+.chat-item {
+  display: flex;
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  gap: 10px;
+}
+
+.chat-item.active { background: #ffe0b2; border-right: 3px solid #f39c12; }
+
+.avatar-green-sm, .avatar-green-xs {
+  background: #a5d6a7;
+  border: 1px solid #000;
+  flex-shrink: 0;
+}
+.avatar-green-sm { width: 35px; height: 35px; }
+.avatar-green-xs { width: 25px; height: 25px; }
+.avatar-green-sm img, .avatar-green-xs img { width: 100%; height: 100%; }
+
+.chat-preview { flex-grow: 1; overflow: hidden; }
+.chat-name { font-size: 12px; font-weight: 800; }
+.chat-time { font-size: 10px; color: #999; }
+.chat-text { font-size: 11px; color: #666; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.chat-column { display: flex; flex-direction: column; background: #fff; position: relative; }
+.chat-bubbles-area { flex-grow: 1; padding: 20px; overflow-y: auto; max-height: 350px; }
+
+.bubble-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end; }
+.bubble-row.sent { justify-content: flex-end; }
+
+.bubble-box { max-width: 75%; }
+.bubble-text {
+  padding: 10px 15px;
+  font-size: 13px;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+.sent .bubble-text { background: #ffe0b2; border-color: #f39c12; }
+.bubble-time { font-size: 9px; color: #bbb; display: block; margin-top: 4px; }
+.sent .bubble-time { text-align: right; }
+
+.chat-input-row {
+  padding: 15px;
+  border-top: 1px solid #eeeeee;
+  display: flex;
+  gap: 10px;
+}
+.chat-input-row input {
+  flex-grow: 1;
+  border: 1px solid #eee;
+  padding: 8px 15px;
+  outline: none;
+}
+.empty-chat { justify-content: center; align-items: center; }
+
+.active-btn {
+  background: #fae5b1 !important;
+  border-color: #f39c12 !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 1. Force the action strip to the very front */
+.banner-actions-strip {
+  position: relative !important;
+  z-index: 999 !important; /* Ensure it is above the avatar/name */
+  pointer-events: none;    /* Let clicks pass through the container... */
+}
+
+.banner-buttons {
+  pointer-events: auto;    /* ...but make the buttons themselves clickable */
+}
+
+.pixel-action-btn {
+  cursor: pointer !important;
+  position: relative;
+  z-index: 1000 !important;
+  pointer-events: all !important;
+}
+
+/* 2. Prevent the header details from blocking the buttons */
+.header-details {
+  position: relative;
+  z-index: 1;              /* Keep this lower than the buttons */
+  pointer-events: none;    /* Clicks pass through the empty space of this container */
+}
+
+.avatar-box, .user-meta {
+  pointer-events: auto;    /* Re-enable clicks for the avatar and name specifically */
+}

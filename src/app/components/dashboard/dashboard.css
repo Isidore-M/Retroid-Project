@@ -164,7 +164,7 @@
 /* 5. Most Popular Grid */
 .popular-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 larger columns */
+  grid-template-columns: repeat(4, 1fr); /* 3 larger columns */
   gap: 25px;
   width: 100%;
 }

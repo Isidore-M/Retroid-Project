@@ -8,7 +8,6 @@
         </svg>
         Back to Market
       </button>
-      
     </nav>
 
     <div class="banner-area">
@@ -19,24 +18,33 @@
       </button>
     </div>
 
-    <div class="banner-actions-strip">
-      <div class="banner-buttons">
-        <button class="pixel-action-btn">
-          <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
-            <path d="M1 1h3v1H1V1zm3 1h3v3H4V2zm3 0h2v1H7V2zM1 5h3v1H1V5zm3 1h1v3H4V6zm1 0h1v1H5V6z"/>
-          </svg>
-          biddings
-          <span class="badge-count">1</span>
-        </button>
-        <button class="pixel-action-btn">
-          <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
-            <path d="M0 2h10v6H0V2zm1 1v1h1V3H1zm1 1v1h1V4H2zm1 1v1h1V5H3zm1 0h2v1H4V5zm3-1v1h1V4H7zm1-1v1h1V3H8z"/>
-          </svg>
-          Messages
-          <span class="badge-count">2</span>
-        </button>
-      </div>
-    </div>
+  <div class="banner-actions-strip">
+  <div class="banner-buttons">
+    <!-- Biddings Button -->
+    <button type="button"
+            class="pixel-action-btn"
+            [class.active-btn]="activeTab === 'biddings'"
+            (click)="setTab('biddings', $event)">
+      <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+        <path d="M1 1h3v1H1V1zm3 1h3v3H4V2zm3 0h2v1H7V2zM1 5h3v1H1V5zm3 1h1v3H4V6zm1 0h1v1H5V6z"/>
+      </svg>
+      biddings
+      <span class="badge-count">1</span>
+    </button>
+
+    <!-- Messages Button -->
+    <button type="button"
+            class="pixel-action-btn"
+            [class.active-btn]="activeTab === 'messages'"
+            (click)="setTab('messages', $event)">
+      <svg viewBox="0 0 10 10" width="16" height="16" class="pixel-icon me-2">
+        <path d="M0 2h10v6H0V2zm1 1v1h1V3H1zm1 1v1h1V4H2zm1 1v1h1V5H3zm1 0h2v1H4V5zm3-1v1h1V4H7zm1-1v1h1V3H8z"/>
+      </svg>
+      Messages
+      <span class="badge-count">{{ chatList.length }}</span>
+    </button>
+  </div>
+</div>
 
     <div class="header-details">
       <div class="avatar-box position-relative">
@@ -94,76 +102,151 @@
           </span>
         </button>
       </aside>
-
       <main class="canvas">
-        <div *ngIf="activeTab === 'listings'" class="fade-in">
-          <h2 class="canvas-h">My listings</h2>
-          <p class="sub-h">Number of items : {{ myItems.length | number:'2.0' }}</p>
+  <div *ngIf="activeTab === 'listings'" class="fade-in">
+    <h2 class="canvas-h">My listings</h2>
+    <p class="sub-h">Number of items : {{ myItems.length | number:'2.0' }}</p>
 
-          <div class="listing-table">
-            <div class="listing-row" *ngFor="let item of myItems">
-              <span class="item-name">{{ item.name }}</span>
-              <div class="item-price-info">
-                <span class="price-val">
-                   <img *ngIf="item.currency_type === 'points'" src="/coin.svg" class="coin-micro">
-                   {{ item.currency_type === 'dollars' ? '$' : '' }}{{ item.price }}
-                </span>
+    <div class="listing-table">
+      <div class="listing-row" *ngFor="let item of myItems">
+        <span class="item-name">{{ item.name }}</span>
+        <div class="item-price-info">
+          <span class="price-val">
+             <img *ngIf="item.currency_type === 'points'" src="/coin.svg" class="coin-micro">
+             {{ item.currency_type === 'dollars' ? '$' : '' }}{{ item.price }}
+          </span>
 
-                <span class="likes-tag d-flex align-items-center">
-                  <svg class="pixel-heart me-1" viewBox="0 0 10 10" width="14" height="14">
-                    <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 6h1v1H1V9zm7 0h1v1H8V9zm-6 1h1v1H2v-1zm5 0h1v1H7v-1zm-4 1h3v1H3v-1z" />
-                  </svg>
-                  {{ item.likes || 0 }} likes
-                </span>
-              </div>
+          <span class="likes-tag d-flex align-items-center">
+            <svg class="pixel-heart me-1" viewBox="0 0 10 10" width="14" height="14">
+              <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 6h1v1H1V9zm7 0h1v1H8V9zm-6 1h1v1H2v-1zm5 0h1v1H7v-1zm-4 1h3v1H3v-1z" />
+            </svg>
+            {{ item.likes || 0 }} likes
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="activeTab === 'info'" class="fade-in">
+    <h2 class="canvas-h">User informations</h2>
+
+    <div class="info-section">
+      <p class="section-label">personal information</p>
+      <div class="info-form-box">
+        <div class="input-group-pixel mb-3">
+          <input type="text" [(ngModel)]="editUsername" placeholder="Username">
+        </div>
+        <div class="input-group-pixel mb-3">
+          <input type="text" disabled [value]="user?.username">
+        </div>
+        <div class="d-flex justify-content-end">
+          <button class="upgrade-btn" (click)="saveInfo()">
+            <svg viewBox="0 0 10 10" width="12" height="12" fill="white" class="me-2"><path d="M1 5h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h3v1H4V8zm4-1h1v1H8V7zm1-1h1v1H9V6z"/></svg>
+            Upgrade
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section mt-4">
+      <p class="section-label">Password</p>
+      <div class="info-form-box">
+        <div class="input-group-pixel mb-2">
+          <input type="password" placeholder="current password">
+        </div>
+        <div class="input-group-pixel mb-2">
+          <input type="password" placeholder="New password">
+        </div>
+        <div class="input-group-pixel mb-3">
+          <input type="password" placeholder="Confirm New password">
+        </div>
+        <div class="d-flex justify-content-end">
+          <button class="upgrade-btn" (click)="updatePassword()">
+            <svg viewBox="0 0 10 10" width="12" height="12" fill="white" class="me-2"><path d="M1 5h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h3v1H4V8zm4-1h1v1H8V7zm1-1h1v1H9V6z"/></svg>
+            Upgrade
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- Inside the main.canvas section -->
+<div *ngIf="activeTab === 'messages'" class="fade-in h-100">
+  <div class="message-shell">
+
+    <!-- Left: Interactions Sidebar -->
+    <div class="interactions-column">
+      <div class="column-header">
+        <h2 class="canvas-h">Messages</h2>
+        <p class="section-label">Interactions</p>
+      </div>
+      <div class="chat-list">
+        <div class="interaction-card"
+             *ngFor="let chat of chatList"
+             [class.active-chat]="selectedChat?.id === chat.id"
+             (click)="selectChat(chat)">
+          <div class="avatar-green-sm">
+            <img [src]="'/avatars/' + (chat.partner_avatar || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
+          </div>
+          <div class="chat-info">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="partner-name">{{ chat.partner_name }}</span>
+              <span class="msg-date">Today</span>
             </div>
+            <p class="preview-text text-truncate">{{ chat.message_text }}</p>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div *ngIf="activeTab === 'info'" class="fade-in">
-          <h2 class="canvas-h">User informations</h2>
+    <!-- Right: Chat Window -->
+    <div class="chat-column" *ngIf="selectedChat; else noChat">
+      <div class="chat-header">
+        <h2 class="canvas-h">{{ selectedChat.partner_name }}</h2>
+      </div>
 
-          <div class="info-section">
-            <p class="section-label">personal information</p>
-            <div class="info-form-box">
-              <div class="input-group-pixel mb-3">
-                <input type="text" [(ngModel)]="editUsername" placeholder="Isidore Manga">
-              </div>
-              <div class="input-group-pixel mb-3">
-                <input type="text" disabled [value]="user?.username">
-              </div>
-              <div class="d-flex justify-content-end">
-                <button class="upgrade-btn" (click)="saveInfo()">
-                  <svg viewBox="0 0 10 10" width="12" height="12" fill="white" class="me-2"><path d="M1 5h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h3v1H4V8zm4-1h1v1H8V7zm1-1h1v1H9V6z"/></svg>
-                  Upgrade
-                </button>
-              </div>
-            </div>
+      <div class="bubbles-viewport">
+        <div class="bubble-row" *ngFor="let msg of activeMessages"
+             [ngClass]="msg.sender_id == user.id ? 'sent' : 'received'">
+
+          <div class="avatar-green-xs" *ngIf="msg.sender_id != user.id">
+            <img [src]="'/avatars/' + (selectedChat.partner_avatar || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
           </div>
 
-          <div class="info-section mt-4">
-            <p class="section-label">Password</p>
-            <div class="info-form-box">
-              <div class="input-group-pixel mb-2">
-                <input type="password" placeholder="current password">
-              </div>
-              <div class="input-group-pixel mb-2">
-                <input type="password" placeholder="New password">
-              </div>
-              <div class="input-group-pixel mb-3">
-                <input type="password" placeholder="Confirm New password">
-              </div>
-              <div class="d-flex justify-content-end">
-                <button class="upgrade-btn" (click)="updatePassword()">
-                  <svg viewBox="0 0 10 10" width="12" height="12" fill="white" class="me-2"><path d="M1 5h1v1H1V5zm1 1h1v1H2V6zm1 1h1v1H3V7zm1 1h3v1H4V8zm4-1h1v1H8V7zm1-1h1v1H9V6z"/></svg>
-                  Upgrade
-                </button>
-              </div>
-            </div>
+          <div class="bubble-box">
+            <div class="bubble-text">{{ msg.message_text }}</div>
+            <span class="bubble-time">8:00 am</span>
+          </div>
+
+          <div class="avatar-green-xs" *ngIf="msg.sender_id == user.id">
+            <img [src]="'/avatars/' + (user.avatar_id || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
           </div>
         </div>
+      </div>
 
-      </main>
+      <div class="chat-input-row">
+        <input type="text" [(ngModel)]="replyText" (keyup.enter)="sendReply()" placeholder="Write a message...">
+        <button class="pixel-action-btn" (click)="sendReply()">SEND</button>
+      </div>
+    </div>
+
+    <ng-template #noChat>
+      <div class="chat-column empty-chat">
+        <p class="sub-h">Select a conversation to start chatting</p>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+
+
+  <div *ngIf="activeTab === 'notifications'" class="fade-in">
+    <h2 class="canvas-h">Notifications</h2>
+    <p class="sub-h">Stay updated with your latest activity.</p>
+    </div>
+</main>
+
     </div>
   </div>
 </div>
