@@ -1,91 +1,116 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
 
-/* 1. Page Wrapper: Centers the card on the screen */
 .page-container {
   height: 100vh;
   width: 100vw;
-  background-color: #fcfcfc;
+  /* Your 8-bit landscape background */
+  background: url('/bkg.jpg') no-repeat center center;
+  background-size: cover;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'VT323', monospace;
   position: relative;
 }
 
-/* 2. Top Branding: Logo left, Date right */
+/* Header Info */
 .branding-header {
   position: absolute;
   top: 30px;
   width: 94%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  color: #000;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 10px;
 }
 
-.logo-box { display: flex; align-items: center; gap: 8px; }
-.logo-box img { height: 24px; }
-.logo-text { font-weight: bold; font-size: 1.1rem; }
-.version-text { color: #888; font-size: 0.9rem; }
-
-/* 3. The Master Card: The main container for the split view */
-.master-card {
+/* The Main UI Card */
+.login-card {
   width: 90%;
-  max-width: 1250px;
-  height: 80vh;
-  border: 1px solid #e8e8e8; /* Subtle greyish border */
-  background: white;
+  max-width: 950px;
+  height: 550px;
+  background: #fff4e4; /* Dark slate from Image 2 */
+  border: 4px solid #000; /* Heavy straight black border */
+  box-shadow: 12px 12px 0px rgba(0,0,0,0.3); /* Offset "pixel" shadow */
   overflow: hidden;
 }
 
-/* 4. Typography */
+/* Illustration Side */
+.illustration-panel {
+  background: #000000;
+  border-right:none;
+}
+.pixel-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated; /* Keeps it sharp! */
+}
+
+/* Typography */
 .pixel-title {
   font-family: 'Press Start 2P', cursive;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.sub-lead { color: #666; font-size: 0.9rem; margin-bottom: 40px; line-height: 1.6; }
-
-/* 5. Inputs: Asymmetric border-radius (Pill on left, sharp on right) */
-.retro-pill-input {
-  width: 100%;
-  padding: 14px 25px;
-  margin-bottom: 15px;
-  border: 2px solid #f2f2f2;
-  border-radius: 40px 0 0 40px;
-  outline: none;
-  font-size: 1rem;
-}
-
-.retro-pill-input:focus { border-color: #000; }
-
-/* 6. Action Button: Pixel style with shadow */
-.btn-pixel-start {
-  background-color: #f3a04b;
-  border: 3px solid #000;
-  border-radius: 40px;
-  padding: 12px 70px;
-  font-family: 'Press Start 2P', cursive;
+  color: #2c2c2c;
   font-size: 18px;
-  box-shadow: 0 4px 0 #000;
-  margin-top: 20px;
-  cursor: pointer;
-  transition: transform 0.1s;
+  margin-bottom: 8px;
+}
+.pixel-hint {
+  color: #888;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
 }
 
-.btn-pixel-start:active { transform: translateY(3px); box-shadow: none; }
-
-/* 7. Illustration Panel */
-.bg-black {
-  background-color: #000;
-  overflow: hidden;
-}
-.illustration-img {
-  width: 100%;             /* Take full width of the col-md-6 */
-  height: 100%;            /* Take full height of the master-card */
-  object-fit:contain;       /* Fills the area completely */
-  object-position: center; /* Keeps the main art centered */
+/* Form Styling */
+.form-group { margin-bottom: 20px; width: 100%; }
+.form-group label {
   display: block;
+  color: #d38b3c; /* Orange from your design */
+  font-size: 14px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
 }
 
-/* 8. Bottom Link */
-.register-prompt a { color: #f3a04b; font-weight: bold; text-decoration: none; }
+.input-pixel-border {
+  border: 2px solid #3a3a3c;
+  background: #f9f9f9;
+}
+
+.input-pixel-border input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 12px;
+  color: #101010;
+  font-family: 'VT323', monospace;
+  font-size: 1.4rem;
+  outline: none;
+}
+
+.input-pixel-border:focus-within {
+  border-color: #f3a04b;
+}
+
+/* Button with 3D Pixel Effect */
+.pixel-btn-main {
+  width: 100%;
+  background: #f3a04b;
+  border: none;
+  padding: 15px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
+  color: #000;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #9c6630; /* 3D bottom edge */
+  transition: all 0.1s;
+  margin-top: 10px;
+}
+
+.pixel-btn-main:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #9c6630;
+}
+
+/* Footer Link */
+.footer-link { color: #888; margin-top: 25px; font-size: 1.1rem; }
+.footer-link a { color: #d38b3c; text-decoration: none; font-weight: bold; }

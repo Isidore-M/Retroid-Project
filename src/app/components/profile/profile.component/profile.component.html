@@ -169,39 +169,41 @@
       </div>
     </div>
   </div>
-
-
-<!-- Inside the main.canvas section -->
+  <!-- Inside the main.canvas section -->
 <div *ngIf="activeTab === 'messages'" class="fade-in h-100">
-  <div class="message-shell">
+  <div class="message-center-wrapper">
 
-    <!-- Left: Interactions Sidebar -->
+    <!-- Left: Interactions Column (Strict Width) -->
     <div class="interactions-column">
-      <div class="column-header">
+      <div class="interactions-header">
         <h2 class="canvas-h">Messages</h2>
-        <p class="section-label">Interactions</p>
+        <span class="sub-label">Interactions</span>
       </div>
-      <div class="chat-list">
-        <div class="interaction-card"
+
+      <div class="interaction-list">
+        <div class="interaction-item"
              *ngFor="let chat of chatList"
-             [class.active-chat]="selectedChat?.id === chat.id"
+             [class.active]="selectedChat?.id === chat.id"
              (click)="selectChat(chat)">
+
           <div class="avatar-green-sm">
-            <img [src]="'/avatars/' + (chat.partner_avatar || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
+            <img [src]="'/avatars/' + (chat.partner_avatar || 1) + '.jpeg'"
+                 (error)="$any($event.target).src='/avatars/1.jpeg'">
           </div>
-          <div class="chat-info">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="partner-name">{{ chat.partner_name }}</span>
-              <span class="msg-date">Today</span>
+
+          <div class="interaction-details">
+            <div class="interaction-meta">
+              <span class="chat-name">{{ chat.partner_name }}</span>
+              <span class="chat-time">Today 20:05</span>
             </div>
-            <p class="preview-text text-truncate">{{ chat.message_text }}</p>
+            <p class="chat-preview">{{ chat.message_text }}</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Right: Chat Window -->
-    <div class="chat-column" *ngIf="selectedChat; else noChat">
+    <!-- Right: Chat History Column (Flex-grow) -->
+    <div class="chat-column" *ngIf="selectedChat; else emptyState">
       <div class="chat-header">
         <h2 class="canvas-h">{{ selectedChat.partner_name }}</h2>
       </div>
@@ -210,35 +212,38 @@
         <div class="bubble-row" *ngFor="let msg of activeMessages"
              [ngClass]="msg.sender_id == user.id ? 'sent' : 'received'">
 
+          <!-- Received Avatar -->
           <div class="avatar-green-xs" *ngIf="msg.sender_id != user.id">
-            <img [src]="'/avatars/' + (selectedChat.partner_avatar || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
+            <img [src]="'/avatars/' + (selectedChat.partner_avatar || 1) + '.jpeg'"
+                 (error)="$any($event.target).src='/avatars/1.jpeg'">
           </div>
 
-          <div class="bubble-box">
-            <div class="bubble-text">{{ msg.message_text }}</div>
-            <span class="bubble-time">8:00 am</span>
+          <div class="bubble-text">
+            {{ msg.message_text }}
           </div>
 
+          <!-- Sent Avatar -->
           <div class="avatar-green-xs" *ngIf="msg.sender_id == user.id">
-            <img [src]="'/avatars/' + (user.avatar_id || 1) + '.jpeg'" (error)="$any($event.target).src='/avatars/1.jpeg'">
+            <img [src]="'/avatars/' + (user.avatar_id || 1) + '.jpeg'"
+                 (error)="$any($event.target).src='/avatars/1.jpeg'">
           </div>
         </div>
       </div>
 
-      <div class="chat-input-row">
+      <div class="chat-input-area">
         <input type="text" [(ngModel)]="replyText" (keyup.enter)="sendReply()" placeholder="Write a message...">
-        <button class="pixel-action-btn" (click)="sendReply()">SEND</button>
+        <button class="pixel-btn-black" (click)="sendReply()">send</button>
       </div>
     </div>
 
-    <ng-template #noChat>
+    <ng-template #emptyState>
       <div class="chat-column empty-chat">
         <p class="sub-h">Select a conversation to start chatting</p>
       </div>
     </ng-template>
+
   </div>
 </div>
-
 
 
   <div *ngIf="activeTab === 'notifications'" class="fade-in">

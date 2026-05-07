@@ -102,49 +102,43 @@
     <img src="/banner-hero.jpg" class="hero-img" alt="Hero background">
   </section>
 
-  <section class="bidding-room mt-5">
-    <div class="section-header d-flex justify-content-between align-items-center mb-4">
-      <h2 class="section-title d-flex align-items-center gap-2">
-        The bidding room
-        <!-- <span class="badge bg-dark text-white" style="font-size: 8px; padding: 4px 6px;">ADMIN ONLY</span> -->
-      </h2>
-      <a href="#" class="view-all">View all ></a>
-    </div>
-
-    <div class="item-grid" *ngIf="biddingItems && biddingItems.length > 0; else noArtifacts">
-
- <div class="item-card-mini" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)">
-  <div class="card-img-box">
-    <div class="high-bid-tag">
-      {{ item.current_bid || item.price }} XP
-    </div>
-
-    <div class="timer-tag" [class.ending-soon]="item.isEndingSoon">
-      <p class="bidtime"> Bid expires in <i class="bi bi-clock-history me-1"></i> {{ item.displayTimer || '--:--:--' }} </p>
-    </div>
-
-    <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
-         (error)="$any($event.target).src='/assets/placeholder.jpg'">
+ <section class="bidding-vault">
+  <div class="vault-tab">
+    THE BIDDING ROOM
   </div>
 
-  <div class="card-info d-flex justify-content-between align-items-center mt-2">
-    <div class="info-left">
-      <span class="item-name text-truncate d-block">{{ item.name }}</span>
-      <span class="item-status">Artifact</span> </div>
-    <span class="item-cat text-muted">{{ item.category }}</span>
-  </div>
-</div>
+  <div class="vault-content">
+    <div class="vault-grid">
+      <div class="artifact-card" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)">
 
-</div>
+        <div class="artifact-img-frame">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+               (error)="$any($event.target).src='/assets/placeholder.jpg'">
+        </div>
 
+        <div class="artifact-footer">
+          <div class="footer-top-row">
+            <span class="label-name">{{ item.name | uppercase }}</span>
+            <span class="label-type">COLLECTIBLE</span>
+          </div>
 
+          <div class="footer-mid-row">
+            <span class="sub-label">CURRENT HIGH BID</span>
+            <span class="sub-label">EXPIRES IN</span>
+          </div>
 
-    <ng-template #noArtifacts>
-      <div class="text-center p-4 border-dashed rounded">
-        <p class="text-muted mb-0">No active bidding artifacts found.</p>
+          <div class="footer-bottom-row">
+            <span class="value-bid">{{ item.current_bid || item.price }} PX</span>
+            <span class="value-timer" [class.ending-soon]="item.isEndingSoon">
+              {{ item.displayTimer || '00:00:00' }}
+            </span>
+          </div>
+        </div>
+
       </div>
-    </ng-template>
-  </section>
+    </div>
+  </div>
+</section>
 
   <section class="action-bar d-flex justify-content-between align-items-center mt-5">
     <div class="filter-buttons d-flex gap-2">

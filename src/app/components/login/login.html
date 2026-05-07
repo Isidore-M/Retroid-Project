@@ -5,30 +5,41 @@
       <img src="/logo.svg" alt="Retroid Logo">
       <span class="logo-text">Retroid</span>
     </div>
-    <span class="version-text">Retroid 2026</span>
+    <span class="version-text"></span>
   </div>
 
-  <div class="master-card shadow-sm">
+  <div class="login-card">
     <div class="row g-0 h-100">
 
-      <div class="col-md-6 bg-black d-flex align-items-center justify-content-center">
-        <img src="/arcade-bg.jpg" alt="Retro Arcade" class="illustration-img">
+      <div class="col-md-5 d-none d-md-flex illustration-panel">
+        <img src="/arcade-bg.jpg" alt="Retro Illustration" class="pixel-art">
       </div>
 
-      <div class="col-md-6 bg-white d-flex align-items-center justify-content-center p-5">
-        <div class="form-wrapper text-center">
-          <h1 class="pixel-title">Welcome back</h1>
-          <p class="sub-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>
+      <div class="col-md-7 d-flex align-items-center justify-content-center p-4">
+        <div class="form-container">
+          <h1 class="pixel-title">WELCOME BACK</h1>
+          <p class="pixel-hint">Enter your credentials to access the terminal.</p>
 
-          <div class="inputs-container">
-            <input type="text" [(ngModel)]="loginData.username" placeholder="user name" class="retro-pill-input">
-            <input type="password" [(ngModel)]="loginData.password" placeholder="Password" class="retro-pill-input">
+          <div class="form-group">
+            <label>USERNAME</label>
+            <div class="input-pixel-border">
+              <input type="text" [(ngModel)]="loginData.username" placeholder="Enter username...">
+            </div>
           </div>
 
-          <button (click)="onLogin()" class="btn-pixel-start">Start</button>
+          <div class="form-group">
+            <label>PASSWORD</label>
+            <div class="input-pixel-border">
+              <input type="password" [(ngModel)]="loginData.password" placeholder="••••••••">
+            </div>
+          </div>
 
-          <p class="register-prompt mt-4">
-            Don't have an account yet? <a routerLink="/register">Register here</a>
+          <button (click)="onLogin()" class="pixel-btn-main">
+            START_GAME
+          </button>
+
+          <p class="footer-link">
+            New user? <a routerLink="/register">Create an account</a>
           </p>
         </div>
       </div>

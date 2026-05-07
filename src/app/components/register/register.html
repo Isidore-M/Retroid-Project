@@ -8,53 +8,64 @@
     <span class="version-text">Retroid 2026</span>
   </div>
 
-  <div class="master-card shadow-sm">
+  <div class="register-card">
     <div class="row g-0 h-100">
 
-      <div class="col-md-6 bg-white d-flex align-items-center justify-content-center p-5">
-        <div class="form-wrapper text-center">
-          <h1 class="pixel-title">Welcome to the retroid community</h1>
-          <p class="sub-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.</p>
+      <div class="col-md-5 d-none d-md-flex art-panel order-md-2">
+        <img src="/register-side.jpg" alt="Born to Game" class="pixel-art-img">
+      </div>
 
-          <div class="avatar-grid-large mb-4">
-            <div *ngFor="let id of avatars"
-                 (click)="selectAvatar(id)"
-                 [class.selected]="registerData.avatar_id === id"
-                 class="avatar-item">
-              <img [src]="'/avatars/' + id + '.jpeg'" alt="Avatar Option">
+      <div class="col-md-7 d-flex align-items-center justify-content-center p-4 order-md-1">
+        <div class="form-content">
+          <h1 class="pixel-title">NEW ACCOUNT</h1>
+          <p class="pixel-hint">Select your character and enter credentials.</p>
+
+          <div class="avatar-selection-box mb-4">
+            <label class="section-label">CHOOSE AVATAR</label>
+            <div class="avatar-grid">
+              <div *ngFor="let id of avatars"
+                   (click)="selectAvatar(id)"
+                   [class.selected]="registerData.avatar_id === id"
+                   class="avatar-pixel-item">
+                <img [src]="'/avatars/' + id + '.jpeg'" alt="Avatar">
+              </div>
             </div>
           </div>
 
-          <div class="inputs-container">
-  <div class="input-wrapper">
-    <input type="text" [(ngModel)]="registerData.username" placeholder="Choose pseudo"
-           [class.input-error]="errors.username" class="retro-pill-input">
-    <p class="error-msg" *ngIf="errors.username">{{ errors.username }}</p>
-  </div>
+          <div class="inputs-stack">
+            <div class="input-field">
+              <label>USERNAME</label>
+              <div class="input-pixel-border" [class.input-error]="errors.username">
+                <input type="text" [(ngModel)]="registerData.username" placeholder="Choose pseudo">
+              </div>
+              <p class="error-text" *ngIf="errors.username">{{ errors.username }}</p>
+            </div>
 
-  <div class="input-wrapper">
-    <input type="password" [(ngModel)]="registerData.password" placeholder="Password"
-           [class.input-error]="errors.password" class="retro-pill-input">
-    <p class="error-msg" *ngIf="errors.password">{{ errors.password }}</p>
-  </div>
+            <div class="input-field">
+              <label>PASSWORD</label>
+              <div class="input-pixel-border" [class.input-error]="errors.password">
+                <input type="password" [(ngModel)]="registerData.password" placeholder="••••••••">
+              </div>
+              <p class="error-text" *ngIf="errors.password">{{ errors.password }}</p>
+            </div>
 
-  <div class="input-wrapper">
-    <input type="password" [(ngModel)]="registerData.confirmPassword" placeholder="Confirm Password"
-           [class.input-error]="errors.confirmPassword" class="retro-pill-input">
-    <p class="error-msg" *ngIf="errors.confirmPassword">{{ errors.confirmPassword }}</p>
-  </div>
-</div>
+            <div class="input-field">
+              <label>CONFIRM PASSWORD</label>
+              <div class="input-pixel-border" [class.input-error]="errors.confirmPassword">
+                <input type="password" [(ngModel)]="registerData.confirmPassword" placeholder="••••••••">
+              </div>
+              <p class="error-text" *ngIf="errors.confirmPassword">{{ errors.confirmPassword }}</p>
+            </div>
+          </div>
 
-          <button (click)="onRegister()" class="btn-pixel-enter">Enter</button>
+          <button (click)="onRegister()" class="btn-retro-action">
+            CREATE_USER
+          </button>
 
-          <p class="login-prompt mt-4">
-            Already have your ticket? <a routerLink="/login">Sign In here</a>
+          <p class="login-link">
+            Already have a ticket? <a routerLink="/login">Sign In</a>
           </p>
         </div>
-      </div>
-
-      <div class="col-md-6 bg-black d-flex align-items-center justify-content-center">
-        <img src="/retro-poster.jpg" alt="Born to Game" class="illustration-img">
       </div>
 
     </div>

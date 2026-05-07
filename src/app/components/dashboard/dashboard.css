@@ -949,3 +949,105 @@ button:disabled {
     width: 24px;
     margin-left: 5px;
 }
+
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* Section Background */
+.bidding-vault {
+  background-color: #4b3621; /* Deep chocolate brown from image */
+  padding: 0 0 60px 0;
+  margin-top: 40px;
+  border-top: 4px solid #000;
+  font-family: 'Press Start 2P', cursive; /* Applied global pixel font */
+}
+
+/* The Yellow Header Tab */
+.vault-tab {
+  display: inline-block;
+  background-color: #ffcc5c;
+  color: #4b3621;
+  padding: 15px 40px;
+  font-size: 14px;
+  border-right: 4px solid #000;
+  border-bottom: 4px solid #000;
+  text-transform: uppercase;
+}
+
+.vault-content {
+  padding: 60px 5%;
+}
+
+.vault-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+}
+
+/* The Artifact Card */
+.artifact-card {
+  background-color: #ffcc5c; /* Card base color */
+  border: 3px solid #000;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.artifact-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Image Box */
+.artifact-img-frame {
+  aspect-ratio: 1 / 1;
+  background-color: #ffb74d; /* Internal orange-yellow */
+  border-bottom: 4px solid #000;
+  margin: 6px;
+  overflow: hidden;
+}
+
+.artifact-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Footer Content */
+.artifact-footer {
+  padding: 10px 15px 20px 15px;
+  color: #4b3621;
+}
+
+.footer-top-row, .footer-mid-row, .footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Labels */
+.label-name { font-size: 12px; font-weight: bold; }
+.label-type { font-size: 8px; }
+
+.sub-label {
+  font-size: 7px;
+  margin-top: 15px;
+  opacity: 0.8;
+}
+
+/* Values */
+.value-bid, .value-timer {
+  font-size: 18px;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+/* Ending Soon Animation */
+.ending-soon {
+  color: #d32f2f;
+  animation: pixel-blink 1s infinite;
+}
+
+@keyframes pixel-blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
