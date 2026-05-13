@@ -9,36 +9,45 @@
     </div>
   </div>
 
-  <div class="auction-grid">
-   <div class="auction-card" *ngFor="let art of artifacts">
-  <div class="timer-tag" [class.expired]="getRemainingTime(art.expiry_time) === 'AUCTION CLOSED'">
-    <i class="bi bi-stopwatch me-1"></i>
-    {{ getRemainingTime(art.expiry_time) }}
-  </div>
+  <div class="auction-grid" *ngIf="artifacts.length > 0; else emptyRoom">
+    <div class="auction-card" *ngFor="let art of artifacts">
 
-  <div class="art-visual">
-    <img [src]="'http://localhost/retroid/public/items/' + art.image_path">
-  </div>
-
-  <div class="art-details">
-    <h3>{{ art.name }}</h3>
-
-    <div class="price-box">
-      <label>CURRENT BID</label>
-      <div class="big-price">{{ art.current_bid || art.price }} <img src="/coin.svg" width="20"></div>
-    </div>
-
-    <div class="bid-action-group" *ngIf="getRemainingTime(art.expiry_time) !== 'AUCTION CLOSED'; else soldTemplate">
-      <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10">
-      <button (click)='placeBid(art, bidInput)'>PLACE BID</button>
-    </div>
-
-    <ng-template #soldTemplate>
-      <div class="sold-banner">
-        <h4 class="pixel-font">SOLD TO {{ art.highest_bidder || 'RESERVE NOT MET' }}</h4>
+      <div class="timer-tag" [class.expired]="getRemainingTime(art.expiry_time) === 'AUCTION CLOSED'">
+        <i class="bi bi-stopwatch me-1"></i>
+        {{ getRemainingTime(art.expiry_time) }}
       </div>
-    </ng-template>
+
+      <div class="art-visual">
+        <img [src]="'http://localhost/retroid/public/items/' + art.image_path">
+      </div>
+
+      <div class="art-details">
+        <h3>{{ art.name }}</h3>
+        <p class="art-description">{{ art.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
+
+        <div class="price-box">
+          <label>CURRENT LEAD</label>
+          <div class="big-price">{{ art.current_bid || art.price }} <img src="/coin.svg" width="20"></div>
+        </div>
+
+        <div class="bid-action-group" *ngIf="getRemainingTime(art.expiry_time) !== 'AUCTION CLOSED'; else soldTemplate">
+          <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10">
+          <button (click)='placeBid(art, bidInput)'>PLACE BID</button>
+        </div>
+
+        <ng-template #soldTemplate>
+          <div class="sold-banner">
+            <h4 class="pixel-font">SOLD TO {{ art.highest_bidder || 'NONE' }}</h4>
+          </div>
+        </ng-template>
+      </div>
+    </div>
   </div>
-</div>
-  </div>
+
+  <ng-template #emptyRoom>
+    <div class="closed-vault-msg border-black text-center p-5">
+      <h3 class="pixel-font">SYSTEM: ACCESS_DENIED</h3>
+      <p>This bid is closed. Wait for the admin to add a new artifact.</p>
+    </div>
+  </ng-template>
 </div>

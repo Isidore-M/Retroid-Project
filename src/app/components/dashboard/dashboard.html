@@ -102,7 +102,7 @@
     <img src="/banner-hero.jpg" class="hero-img" alt="Hero background">
   </section>
 
- <section class="bidding-vault">
+<section class="bidding-vault">
   <div class="vault-tab">
     THE BIDDING ROOM
   </div>
@@ -111,27 +111,37 @@
     <div class="vault-grid">
       <div class="artifact-card" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)">
 
-        <div class="artifact-img-frame">
+        <div class="artifact-preview">
           <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
                (error)="$any($event.target).src='/assets/placeholder.jpg'">
         </div>
 
-        <div class="artifact-footer">
-          <div class="footer-top-row">
-            <span class="label-name">{{ item.name | uppercase }}</span>
-            <span class="label-type">COLLECTIBLE</span>
+        <div class="artifact-details">
+          <div class="header-group">
+            <h2 class="artifact-title">{{ item.name }}</h2>
+            <span class="artifact-subtitle">Collectible</span>
           </div>
 
-          <div class="footer-mid-row">
-            <span class="sub-label">CURRENT HIGH BID</span>
-            <span class="sub-label">EXPIRES IN</span>
+          <div class="description-group">
+            <h4 class="label-tiny">Description</h4>
+            <p class="description-text">{{ item.description }}</p>
           </div>
 
-          <div class="footer-bottom-row">
-            <span class="value-bid">{{ item.current_bid || item.price }} PX</span>
-            <span class="value-timer" [class.ending-soon]="item.isEndingSoon">
-              {{ item.displayTimer || '00:00:00' }}
-            </span>
+          <div class="stats-footer">
+            <div class="stat-item">
+              <span class="label-tiny">high bid</span>
+              <div class="stat-value gold">
+                {{ item.current_bid || item.price }}
+                <img src="/coin.svg" class="coin-icon">
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <span class="label-tiny">Expires in</span>
+              <div class="stat-value orange" [class.ending-soon]="item.isEndingSoon">
+                {{ item.displayTimer || '00:00:00' }}
+              </div>
+            </div>
           </div>
         </div>
 

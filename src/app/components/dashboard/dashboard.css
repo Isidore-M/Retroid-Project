@@ -8,7 +8,7 @@
   min-height: 100vh;
   margin: 0;
   padding: 20px 5%; /* 5% padding on left/right creates that flexible white space */
-  background-color: #ffffff;
+  background:#ffffff;
   box-sizing: border-box;
 }
 
@@ -83,7 +83,7 @@
 /* Hero Banner */
 .hero-banner {
   position: relative;
-  height: 400px;
+  height: 32rem;
   border-radius: 0; /* Or slight radius if you prefer */
   overflow: hidden;
   background-color: #7BC367; /* The green in your image */
@@ -953,101 +953,140 @@ button:disabled {
 
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-/* Section Background */
+
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+/* Section Background: Pale Tan */
 .bidding-vault {
-  background-color: #4b3621; /* Deep chocolate brown from image */
-  padding: 0 0 60px 0;
-  margin-top: 40px;
-  border-top: 4px solid #000;
-  font-family: 'Press Start 2P', cursive; /* Applied global pixel font */
+  background-color: #f3e4c9;
+  min-height: 100vh;
+  padding-bottom: 50px;
+  margin-top: 4rem;
 }
 
-/* The Yellow Header Tab */
+/* Header Tab: Black/White */
 .vault-tab {
   display: inline-block;
-  background-color: #ffcc5c;
-  color: #4b3621;
+  background-color: #202020;
+  color: #ffffff;
   padding: 15px 40px;
+  font-family: 'Press Start 2P', cursive;
   font-size: 14px;
-  border-right: 4px solid #000;
-  border-bottom: 4px solid #000;
   text-transform: uppercase;
 }
 
-.vault-content {
-  padding: 60px 5%;
-}
+.vault-content { padding: 40px 2%; }
 
+/* Grid: 3 Items per row */
 .vault-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
-/* The Artifact Card */
+/* Card: Horizontal Split */
 .artifact-card {
-  background-color: #ffcc5c; /* Card base color */
-  border: 3px solid #000;
+  display: flex;
+  background-color: #4b3621; /* Deep chocolate brown */
+  height: 320px;
+  border: 4px solid  #ffd78d;
   cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.artifact-card:hover {
-  transform: translateY(-5px);
-}
-
-/* Image Box */
-.artifact-img-frame {
-  aspect-ratio: 1 / 1;
-  background-color: #ffb74d; /* Internal orange-yellow */
-  border-bottom: 4px solid #000;
-  margin: 6px;
+  transition: transform 0.2s ease;
   overflow: hidden;
 }
 
-.artifact-img-frame img {
+.artifact-card:hover { transform: translateY(-5px); }
+
+/* Left Side (Image) */
+.artifact-preview {
+  flex: 0 0 45%;
+}
+
+.artifact-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Footer Content */
-.artifact-footer {
-  padding: 10px 15px 20px 15px;
-  color: #4b3621;
-}
-
-.footer-top-row, .footer-mid-row, .footer-bottom-row {
+/* Right Side (Details) */
+.artifact-details {
+  flex: 1;
+  padding: 25px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  color: #fde2c0;
+  text-align: left;
 }
 
-/* Labels */
-.label-name { font-size: 12px; font-weight: bold; }
-.label-type { font-size: 8px; }
+/* Typography matching the image */
+.artifact-title {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1em;
+  font-weight: 700;
+  color: #f3a04b; /* Golden Orange */
+  margin: 0;
+}
 
-.sub-label {
-  font-size: 7px;
-  margin-top: 15px;
+.artifact-subtitle {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 14px;
+  color: #fde2c0;
   opacity: 0.8;
 }
 
-/* Values */
-.value-bid, .value-timer {
-  font-size: 18px;
-  margin-top: 5px;
-  font-weight: bold;
+.description-group {
+  margin: 20px 0;
+  flex-grow: 1;
 }
 
-/* Ending Soon Animation */
-.ending-soon {
-  color: #d32f2f;
-  animation: pixel-blink 1s infinite;
+.label-tiny {
+  display: block;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.5em;
+  color: #f8f8f8;
+  opacity: 0.7;
+  margin-bottom: 5px;
 }
 
-@keyframes pixel-blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+.description-text {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #fde2c0;
+  /* Multi-line truncation to keep the card size stable */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
+
+/* Stats Footer Area */
+.stats-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(253, 226, 192, 0.1);
+  padding-top: 15px;
+}
+
+.stat-value {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8em;
+  font-weight: 100;
+  display: flex;
+  align-items: center;
+}
+
+.gold { color: #ffcb10; }
+.orange { color: #f3a04b; }
+
+.coin-icon {
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+}
+
+.ending-soon { color: #ff4d4d; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0.5; } }
