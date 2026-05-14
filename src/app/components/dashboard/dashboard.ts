@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy,ChangeDetectorRef } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { ToastService } from '../../services/toast.service';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent implements OnInit,OnDestroy {
+export class DashboardComponent implements OnInit {
   user: any;
 
 
@@ -249,53 +249,19 @@ private getTimeRemaining(ms: number): string {
     this.cdr.detectChanges();
   }
 
-  openBiddingModal(item: any) {
-    this.selectedItem = item;
-    const currentPrice = Number(item.current_bid || item.price);
-    this.bidAmount = currentPrice + 1;
+ openBiddingModal(item: any) {
+  this.selectedItem = item;
 
-    const modalElement = document.getElementById('bidModal');
-    if (modalElement) {
-      const modal = new (window as any).bootstrap.Modal(modalElement);
-      modal.show();
-    }
+  // Automatically suggest a bid 10 XP higher than the current price
+  const currentPrice = Number(item.current_bid || item.price);
+  this.bidAmount = currentPrice + 10;
+
+  const modalElement = document.getElementById('bidModal');
+  if (modalElement) {
+    const modal = new (window as any).bootstrap.Modal(modalElement);
+    modal.show();
   }
-
-  submitBid() {
-    if (!this.selectedItem || !this.bidAmount) return;
-
-    const currentPrice = Number(this.selectedItem.current_bid || this.selectedItem.price);
-    const userPoints = Number(this.user.points);
-    const bidValue = Number(this.bidAmount);
-
-    if (bidValue > userPoints) {
-      this.toastService.show("Insufficient XP! You need more coins.", "error");
-      return;
-    }
-
-    if (bidValue <= currentPrice) {
-      this.toastService.show(`Bid too low! Must be higher than ${currentPrice} XP.`, "warning");
-      return;
-    }
-
-    this.itemService.placeBid(this.selectedItem.id, this.user.id, bidValue).subscribe({
-      next: (res: any) => {
-        if (res.status === 'success') {
-          this.toastService.show("BID REGISTERED: You are now the leader!", "success");
-
-          // Sync wallet with server response
-          this.user.points = res.new_balance !== undefined ? Number(res.new_balance) : (userPoints - bidValue);
-          localStorage.setItem('user', JSON.stringify(this.user));
-
-          this.loadMarketplace();
-          this.triggerModalClose('bidModal'); // Close modal
-        } else {
-          this.toastService.show(res.message || "Bid failed.", "error");
-        }
-      },
-      error: () => this.toastService.show("Connection Error: Auction house unreachable.", "error")
-    });
-  }
+}
 
   submitItem() {
     if (this.user.status === 'blocked') {
@@ -454,41 +420,71 @@ viewNotification(notif: any) {
 
 
 
-// Rename 'submitBid()' to 'placeBid'
-placeBid(item: any, bidInput: HTMLInputElement) {
-  const bidValue = Number(bidInput.value);
-  const currentPrice = Number(item.current_bid || item.price);
+// Now it specifically expects a string from the HTML
+placeBid(inputValue: string) {
+  console.log("Button Clicked! Raw input value is:", inputValue);
+
+  // 0. Safety Check
+  if (!this.selectedItem) {
+    this.toastService.show("System error: No artifact selected.", "error");
+    return;
+  }
+
+  // Convert the string we got from the HTML into a Math Number
+  const bidValue = Number(inputValue);
+  const currentPrice = Number(this.selectedItem.current_bid || this.selectedItem.price);
   const userPoints = Number(this.user.points);
 
   // 1. Validation Logic
   if (!bidValue || bidValue <= currentPrice) {
-    this.toastService.show(`Bid must be higher than ${currentPrice} XP!`, "warning");
+    this.toastService.show(`Bid too low! Must be higher than ${currentPrice} XP.`, "warning");
     return;
   }
 
   if (bidValue > userPoints) {
-    this.toastService.show("Insufficient XP balance!", "error");
+    this.toastService.show("Insufficient XP! You need more coins.", "error");
     return;
   }
 
-  // 2. Call the Service
-  this.itemService.placeBid(item.id, this.user.id, bidValue).subscribe({
+  // 2. Call the API Service
+  this.itemService.placeBid(this.selectedItem.id, this.user.id, bidValue).subscribe({
     next: (res: any) => {
+      console.log("Server response:", res);
+
       if (res.status === 'success') {
-        const msg = res.was_extended ? "Time extended! You lead." : "High bid recorded!";
-        this.toastService.show(msg, res.was_extended ? "warning" : "success");
+        // Safe Toast Message
+        const msg = res.message || "BID REGISTERED: You are now the leader!";
+        this.toastService.show(msg, "success");
 
-        // Sync points
-        this.user.points = Number(res.new_balance);
-        localStorage.setItem('user', JSON.stringify(this.user));
+        // Safe Points Sync
+        if (res.new_balance !== undefined) {
+          this.user.points = Number(res.new_balance);
+          localStorage.setItem('user', JSON.stringify(this.user));
+        }
 
-        bidInput.value = ''; // Clear the input
-        this.loadMarketplace(); // Refresh data
+        this.selectedItem.current_bid = bidValue;
+        this.selectedItem.highest_bidder = this.user.username; // (Optional: If your UI shows the leader's name)
+        // Refresh the UI to show the new bid
+        this.loadMarketplace();
+
       } else {
-        this.toastService.show(res.message, "error");
+        // If the server rejected the bid (e.g., "You are already the leading bidder!")
+        this.toastService.show(res.message || "Bidding failed.", "error");
+      }
+
+      // 3. BULLETPROOF MODAL CLOSE (Runs for BOTH success and errors!)
+      const modalElement = document.getElementById('bidModal');
+      if (modalElement) {
+        const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+        }
       }
     },
-    error: () => this.toastService.show("Connection error.", "error")
+    error: (err) => {
+      console.error("HTTP Error:", err);
+      this.toastService.show("Connection Error: Auction house unreachable.", "error");
+    }
   });
 }
 

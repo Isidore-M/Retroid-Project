@@ -992,7 +992,7 @@ button:disabled {
 .artifact-card {
   display: flex;
   background-color: #4b3621; /* Deep chocolate brown */
-  height: 24rem;
+  height: 25rem;
   border: 4px solid  #ffd78d;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -1033,6 +1033,7 @@ button:disabled {
   font-weight: 700;
   color: #f3a04b; /* Golden Orange */
   margin: 0;
+  -webkit-line-clamp: 2;
 }
 
 .artifact-subtitle {
@@ -1073,14 +1074,14 @@ button:disabled {
 .bid-action-group {
   display: flex;
   gap: 5px;
-  margin-top: 5px;
+  margin:0.7rem 0;
 }
 
-/* The Number Input */
+
 .bid-action-group input {
   width: 60px;
   background: #111;
-  border: 1px solid #f3a04b; /* Matches your gold text */
+  border: 1px solid #f7d55a; /* Matches your gold text */
   color: #fff;
   font-family: inherit; /* Inherits your pixel font */
   padding: 4px;
@@ -1088,15 +1089,12 @@ button:disabled {
   outline: none;
 }
 
-.bid-action-group input::placeholder {
-  color: #666;
-}
 
 /* The Place Bid Button */
 .btn-pixel-bid {
-  background: #f3a04b;
+  background: #f3cc4b;
   color: #000;
-  border: 1px solid #fff;
+  border:none;
   font-family: inherit;
   font-weight: 800;
   font-size: 11px;
@@ -1263,4 +1261,211 @@ button:disabled {
   color: #888;
   margin: 0;
   line-height: 1.5;
+}
+/* --- SPLIT MODAL ARCHITECTURE --- */
+.split-modal {
+  max-width: 800px;
+}
+
+.split-modal .modal-content {
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+}
+
+.split-modal .modal-body {
+  height: 450px;
+  position: relative;
+  background-color: #4a3629; /* The exact dark brown from the mockup */
+  width: auto;
+}
+
+/* Close Button Override */
+.btn-close-split {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  z-index: 10;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.btn-close-split:hover {
+  opacity: 1;
+}
+
+/* LEFT SIDE: Image Container */
+.split-left {
+  flex: 1;
+  background-color: #111;
+  overflow: hidden;
+}
+
+.split-left img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* RIGHT SIDE: Content Container */
+.split-right {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  width: 65%;
+}
+
+.state-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* --- TYPOGRAPHY & COLORS --- */
+.title-gold {
+  color: #f5b849;
+  font-family: 'Press Start 2P', cursive;
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0;
+}
+
+.large-title {
+  font-size: 32px;
+  line-height: 1.3;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.subtitle-gold {
+  color: #f5b849;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.desc-block {
+  margin-bottom: 20px;
+}
+
+
+.desc-label {
+  display: block;
+  color: #c0b3a9; /* Light taupe */
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.desc-text {
+  color: #a4968b; /* Darker taupe */
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+
+  /* Clamp to prevent overflow */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- WALLET DISPLAY --- */
+.wallet-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.wallet-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.wallet-value {
+  color: #f5b849;
+  font-size: 1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.pixel-coin {
+  width: 18px;
+  height: 18px;
+}
+
+/* --- BIDDING CONTROLS --- */
+.bidding-action-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  width: 100%;
+  margin-top: auto;
+}
+
+.split-input {
+  flex: 1;
+  min-width: 0; /* Stops the input from forcing the container to expand */
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid #7a5e4d;
+  color: #fff;
+  padding: 10px 15px;
+  outline: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.btn-split-confirm {
+  font-family: 'Press Start 2P', cursive;;
+ background: #f5b849;
+  color: #4a3629;
+  border: none;
+  font-size: 16px;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-split-confirm:hover {
+  background: #fff;
+  color: #4a3629;
+}
+
+/* Responsive adjustment for Mobile */
+@media (max-width: 768px) {
+  .split-modal .modal-body {
+    height: auto;
+    flex-direction: column !important;
+  }
+  .split-left {
+    /* height: 250px; */
+    flex: 0 0 45%; /* Locks the image to exactly 45% of the modal */
+    background-color: #111;
+    overflow: hidden;
+  }
+  .split-right {
+    flex: 0 0 55%; /* Locks the content to exactly 55% */
+  padding: 30px 35px; /* Slightly adjusted padding to fit the wider pixel font */
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  }
+}
+/* This Ensure toast notifications always pop up OVER the modals */
+.toast-container {
+  z-index: 9999 !important;
 }

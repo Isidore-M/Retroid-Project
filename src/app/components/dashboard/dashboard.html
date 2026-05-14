@@ -151,28 +151,29 @@
           </div>
 
           <div class="stats-footer">
-            <div class="bid-input-container" *ngIf="art.displayTimer !== 'CLOSED'; else soldTemplate">
-              <div class="stat-item mb-2">
-                <span class="label-tiny">Current lead</span>
-                <div class="stat-value gold">
-                  {{ art.current_bid || art.price }}
-                  <img src="/coin.svg" class="coin-icon">
-                </div>
-              </div>
+  <div class="bid-input-container" *ngIf="art.displayTimer !== 'CLOSED'; else soldTemplate">
+    <div class="stat-item mb-2">
+      <span class="label-tiny">Current lead</span>
+      <div class="stat-value gold">
+        {{ art.current_bid || art.price }}
+        <img src="/coin.svg" class="coin-icon">
+      </div>
+    </div>
 
-              <!-- <div class="bid-action-group">
-                <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10" (click)="$event.stopPropagation()">
-                <button class="btn-pixel-bid" (click)="placeBid(art, bidInput); $event.stopPropagation()">PLACE_BID</button>
-              </div> -->
-            </div>
+    <div class="bid-action-group">
+      <button class="btn-pixel-bid" style="width: 100%;" (click)="openBiddingModal(art); $event.stopPropagation()">
+        ENTER AUCTION
+      </button>
+    </div>
+  </div>
 
-            <div class="stat-item text-end">
-              <span class="label-tiny">Expires in</span>
-              <div class="stat-value orange" [class.ending-soon]="art.isEndingSoon">
-                {{ art.displayTimer || '00:00:00' }}
-              </div>
-            </div>
-          </div>
+  <div class="stat-item text-end">
+    <span class="label-tiny">Expires in</span>
+    <div class="stat-value orange" [class.ending-soon]="art.isEndingSoon">
+      {{ art.displayTimer || '00:00:00' }}
+    </div>
+  </div>
+</div>
 
           <ng-template #soldTemplate>
             <div class="sold-banner">
@@ -320,40 +321,65 @@
 </div>
 
 <div class="modal fade" id="bidModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content retro-modal">
-      <div class="modal-header border-0">
-        <h5 class="modal-title pixel-text-sm">Place your Bid</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body text-center" *ngIf="selectedItem">
-        <img [src]="'http://localhost/retroid/public/items/' + selectedItem.image_path" class="modal-preview-img mb-3">
-        <h3 class="pixel-font2">{{ selectedItem.name }}</h3>
+  <div class="modal-dialog modal-dialog-centered modal-lg split-modal">
+    <div class="modal-content border-0 bg-transparent">
 
-        <div class="wallet-info mb-4">
-          <small>Your Wallet:</small>
-          <div class="xp-display">{{ user?.points || 0 }} <img src="/coin.svg" width="16"></div>
-        </div>
+      <div class="modal-body p-0 d-flex flex-column flex-md-row">
 
-        <div class="wallet-warning-box mb-3" *ngIf="user?.points < ((selectedItem.current_bid || selectedItem.price) + 1)">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          <span>You don't have enough to place a bid.</span>
-        </div>
-
-        <div class="input-group-custom mb-3" *ngIf="user?.points >= ((selectedItem.current_bid || selectedItem.price) + 1)">
-          <input type="number"
-                [(ngModel)]="bidAmount"
-                [placeholder]="'Min: ' + ((selectedItem.current_bid || selectedItem.price) + 1)"
-                class="retro-input text-center">
-        </div>
-
-        <button class="btn-pixel-post w-100"
-                [disabled]="user?.points < ((selectedItem.current_bid || selectedItem.price) + 1)"
-                (click)="submitBid()">
-          <span *ngIf="user?.points >= ((selectedItem.current_bid || selectedItem.price) + 1)">Confirm Bid</span>
-          <span *ngIf="user?.points < ((selectedItem.current_bid || selectedItem.price) + 1)">INSUFFICIENT FUNDS</span>
+        <button type="button" class="btn-close-split" data-bs-dismiss="modal" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
         </button>
+
+        <div class="split-left">
+          <img [src]="selectedItem ? 'http://localhost/retroid/public/items/' + selectedItem.image_path : '/assets/placeholder.jpg'" alt="Artifact">
+        </div>
+
+        <div class="split-right">
+
+          <ng-container *ngIf="user?.points <= (selectedItem?.current_bid || selectedItem?.price); else normalState">
+            <div class="state-container error-state">
+              <h2 class="title-gold large-title">You don't have<br>enough to place a bid</h2>
+
+              <div class="wallet-row mt-auto">
+                <span class="wallet-text">Your wallet</span>
+                <div class="wallet-value">
+                  {{ user?.points || 0 }}
+                  <img src="/coin.svg" class="pixel-coin" alt="coin">
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #normalState>
+            <div class="state-container normal-state">
+              <h2 class="title-gold mb-4">Place your bid</h2>
+
+              <h4 class="subtitle-gold">{{ selectedItem?.name }}</h4>
+
+              <div class="desc-block">
+                <span class="desc-label">Description</span>
+                <p class="desc-text">{{ selectedItem?.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
+              </div>
+
+              <div class="wallet-row mt-auto">
+                <span class="wallet-text">Your wallet</span>
+                <div class="wallet-value">
+                  {{ user?.points || 0 }}
+                  <img src="/coin.svg" class="pixel-coin" alt="coin">
+                </div>
+              </div>
+
+              <div class="bidding-action-row mt-4">
+  <input type="number" #modalInput [value]="(selectedItem?.current_bid || selectedItem?.price) + 10" class="split-input">
+
+  <button class="btn-split-confirm" (click)="placeBid(modalInput.value)">Confirm Bid</button>
+</div>
+            </div>
+          </ng-template>
+
+        </div>
       </div>
+
     </div>
   </div>
 </div>
