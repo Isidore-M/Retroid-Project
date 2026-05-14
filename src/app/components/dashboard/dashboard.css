@@ -1469,3 +1469,7 @@ button:disabled {
 .toast-container {
   z-index: 9999 !important;
 }
+.pixely{
+  width: 7rem;
+  margin-top: 1rem;
+}
