@@ -1,8 +1,8 @@
 <div class="bidding-room-wrapper fade-in">
-  <div class="room-header d-flex justify-content-between align-items-end">
+  <div class="room-header d-flex justify-content-between align-items-end mb-4">
     <div>
       <h2 class="pixel-font text-gold">THE ARTIFACT CHAMBER</h2>
-      <p class="live-indicator"><span class="dot"></span> LIVE AUCTION DATA</p>
+      <p class="live-indicator"><span class="dot"></span> LIVE_AUCTION_FEED</p>
     </div>
     <div class="user-xp-display">
       YOUR BALANCE: <strong>{{ user.points }}</strong> <img src="/coin.svg" width="16">
@@ -10,29 +10,64 @@
   </div>
 
   <div class="auction-grid" *ngIf="artifacts.length > 0; else emptyRoom">
-    <div class="auction-card" *ngFor="let art of artifacts">
 
-      <div class="timer-tag" [class.expired]="getRemainingTime(art.expiry_time) === 'AUCTION CLOSED'">
-        <i class="bi bi-stopwatch me-1"></i>
-        {{ getRemainingTime(art.expiry_time) }}
-      </div>
+   <div class="artifact-card" *ngFor="let art of biddingItems" [class]="art.rarity" (click)="openBiddingModal(art)">
 
-      <div class="art-visual">
-        <img [src]="'http://localhost/retroid/public/items/' + art.image_path">
-      </div>
+      <div class="artifact-preview">
+        <img [src]="'http://localhost/retroid/public/items/' + art.image_path"
+             (error)="$any($event.target).src='/assets/placeholder.jpg'">
 
-      <div class="art-details">
-        <h3>{{ art.name }}</h3>
-        <p class="art-description">{{ art.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
-
-        <div class="price-box">
-          <label>CURRENT LEAD</label>
-          <div class="big-price">{{ art.current_bid || art.price }} <img src="/coin.svg" width="20"></div>
+        <div class="bid-terminal">
+          <div class="terminal-header">LIVE_FEED</div>
+          <div class="terminal-body custom-scroll">
+            <div class="terminal-line" *ngFor="let log of art.history">
+              <span class="t-user">> {{ log.username }}</span>
+              <span class="t-amount">bid {{ log.bid_amount }} PX</span>
+            </div>
+            <div class="terminal-line empty" *ngIf="!art.history?.length">
+              > WAITING_FOR_BIDS...
+            </div>
+          </div>
         </div>
 
-        <div class="bid-action-group" *ngIf="getRemainingTime(art.expiry_time) !== 'AUCTION CLOSED'; else soldTemplate">
-          <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10">
-          <button (click)='placeBid(art, bidInput)'>PLACE BID</button>
+        <div class="rarity-tag" *ngIf="art.rarity !== 'Common'">
+          {{ art.rarity | uppercase }}
+        </div>
+      </div>
+
+      <div class="artifact-details">
+        <div class="header-group">
+          <h2 class="artifact-title">{{ art.name }}</h2>
+          <span class="artifact-subtitle">{{ art.rarity }} Collectible</span>
+        </div>
+
+        <div class="description-group">
+          <h4 class="label-tiny">Description</h4>
+          <p class="description-text">{{ art.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
+        </div>
+
+        <div class="stats-footer">
+          <div class="bid-input-container" *ngIf="getRemainingTime(art.expiry_time) !== 'AUCTION CLOSED'; else soldTemplate">
+            <div class="stat-item mb-2">
+              <span class="label-tiny">Current lead</span>
+              <div class="stat-value gold">
+                {{ art.current_bid || art.price }}
+                <img src="/coin.svg" class="coin-icon">
+              </div>
+            </div>
+
+            <div class="bid-action-group">
+              <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10" (click)="$event.stopPropagation()">
+              <button class="btn-pixel-bid" (click)="placeBid(art, bidInput); $event.stopPropagation()">PLACE_BID</button>
+            </div>
+          </div>
+
+          <div class="stat-item text-end">
+            <span class="label-tiny">Expires in</span>
+            <div class="stat-value orange" [class.ending-soon]="getRemainingTime(art.expiry_time).includes('0h 0m')">
+              {{ getRemainingTime(art.expiry_time) }}
+            </div>
+          </div>
         </div>
 
         <ng-template #soldTemplate>
@@ -41,6 +76,7 @@
           </div>
         </ng-template>
       </div>
+
     </div>
   </div>
 

@@ -24,9 +24,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Capture the is_bidding flag
     $is_bidding = isset($_POST['is_bidding']) ? (int)$_POST['is_bidding'] : 0;
 
-    // NEW: Capture the expiry_time sent from Angular
-    // For regular items, this will remain NULL
+    // Capture the expiry_time sent from Angular
     $expiry_time = $_POST['expiry_time'] ?? null;
+
+    // Capture description and rarity for the Bidding Room
+    $description = $_POST['description'] ?? '';
+    $rarity = $_POST['rarity'] ?? 'Common';
+
+    // =========================================================================
+    // NEW: STRICT 3-ITEM LIMIT CHECK FOR THE BIDDING CHAMBER
+    // =========================================================================
+    if ($is_bidding === 1) {
+        try {
+            $checkStmt = $conn->query("SELECT COUNT(*) FROM items WHERE is_bidding = 1");
+            $biddingCount = $checkStmt->fetchColumn();
+
+            if ($biddingCount >= 3) {
+                ob_end_clean();
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "CHAMBER FULL: Maximum of 3 artifacts allowed. Remove an active auction first."
+                ]);
+                exit; // Stop the script entirely so no image is uploaded
+            }
+        } catch (PDOException $e) {
+            ob_end_clean();
+            echo json_encode(["status" => "error", "message" => "Database error during capacity check."]);
+            exit;
+        }
+    }
+    // =========================================================================
 
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
 
@@ -52,23 +79,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
             try {
-                /**
-                 * UPDATED QUERY:
-                 * Now includes the 'expiry_time' column to store the auction deadline.
-                 */
-                $query = "INSERT INTO items (user_id, name, category, price, currency_type, image_path, is_bidding, expiry_time)
-                          VALUES (:uid, :name, :cat, :price, :curr, :path, :is_bid, :expiry)";
+                $query = "INSERT INTO items (user_id, name, description, rarity, category, price, currency_type, image_path, is_bidding, expiry_time)
+                          VALUES (:uid, :name, :desc, :rarity, :cat, :price, :curr, :path, :is_bid, :expiry)";
 
                 $stmt = $conn->prepare($query);
                 $success = $stmt->execute([
                     'uid'    => $user_id,
                     'name'   => $name,
+                    'desc'   => $description,
+                    'rarity' => $rarity,
                     'cat'    => $category,
                     'price'  => $price,
                     'curr'   => $currency,
                     'path'   => $new_filename,
                     'is_bid' => $is_bidding,
-                    'expiry' => $expiry_time // Maps to the timestamp from Angular
+                    'expiry' => $expiry_time
                 ]);
 
                 if ($success) {

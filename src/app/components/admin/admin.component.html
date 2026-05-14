@@ -94,6 +94,7 @@
 
     <div *ngIf="activeTab === 'bidding'" class="admin-section">
       <div class="row">
+
         <div class="col-md-5">
           <div class="artifact-deploy-box">
             <h3>Deploy New Artifact</h3>
@@ -102,34 +103,54 @@
             <div class="deploy-form grid-form">
               <div class="form-group">
                 <label>Artifact Name</label>
-                <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy" class="retro-input">
+                <input type="text" [(ngModel)]="newArtifact.name" placeholder="e.g. Rare Gold Gameboy" class="retro-input" [disabled]="biddingItems.length >= 3">
               </div>
 
               <div class="form-group">
                 <label>Starting Bid (XP)</label>
-                <input type="number" [(ngModel)]="newArtifact.price" placeholder="500" class="retro-input">
+                <input type="number" [(ngModel)]="newArtifact.price" placeholder="500" class="retro-input" [disabled]="biddingItems.length >= 3">
+              </div>
+
+              <div class="form-group">
+                <label>Rarity Tier</label>
+                <select [(ngModel)]="newArtifact.rarity" class="retro-input" [disabled]="biddingItems.length >= 3">
+                  <option value="Common">Common</option>
+                  <option value="Rare">Rare</option>
+                  <option value="Legendary">Legendary</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Artifact Description</label>
+                <textarea [(ngModel)]="newArtifact.description" rows="3" placeholder="Enter lore, condition, and details..." class="retro-input" style="width: 100%; background: #000; border: 1px solid #333; padding: 12px; color: #fff; outline: none;" [disabled]="biddingItems.length >= 3"></textarea>
               </div>
 
               <div class="form-group">
                 <label>Auction Expiry (Custom Date/Time)</label>
-                <input type="datetime-local" [(ngModel)]="newArtifact.expiry_custom" class="retro-input">
+                <input type="datetime-local" [(ngModel)]="newArtifact.expiry_custom" class="retro-input" [disabled]="biddingItems.length >= 3">
                 <small class="text-muted d-block mt-1">If left blank, auction defaults to 24 hours.</small>
               </div>
 
               <div class="form-group">
                 <label>Visual Asset</label>
-                <input type="file" (change)="onFileSelected($event)" class="custom-file-input">
+                <input type="file" (change)="onFileSelected($event)" class="custom-file-input" [disabled]="biddingItems.length >= 3">
               </div>
 
-              <button class="btn-deploy" (click)="postArtifact()">
-                Authorize Deployment
+              <div class="full-chamber-warning" *ngIf="biddingItems.length >= 3">
+                <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+                <strong>CHAMBER FULL</strong><br>
+                Delete an active artifact to deploy a new one.
+              </div>
+
+              <button class="btn-deploy" (click)="postArtifact()" [disabled]="biddingItems.length >= 3" [class.btn-disabled]="biddingItems.length >= 3">
+                {{ biddingItems.length >= 3 ? 'SYSTEM LOCKED' : 'Authorize Deployment' }}
               </button>
             </div>
           </div>
         </div>
 
         <div class="col-md-7">
-          <h3 class="pixel-font mb-3" style="font-size: 1.2rem;">Currently Auctioning</h3>
+          <h3 class="pixel-font mb-3" style="font-size: 1.2rem;">Currently Auctioning ({{ biddingItems.length }}/3)</h3>
           <div class="active-bidding-list">
             <div class="market-item-row" *ngFor="let item of biddingItems">
               <img [src]="'http://localhost/retroid/public/items/' + item.image_path" class="admin-item-thumb">
@@ -142,7 +163,7 @@
                 <button class="btn-delete-item" (click)="deleteItem(item.id)">Remove</button>
               </div>
             </div>
-            <div *ngIf="biddingItems.length === 0" class="text-muted small">No active auctions.</div>
+            <div *ngIf="biddingItems.length === 0" class="text-muted small">No active auctions. Chamber is empty.</div>
           </div>
         </div>
       </div>

@@ -961,9 +961,9 @@ button:disabled {
 /* Section Background: Pale Tan */
 .bidding-vault {
   background-color: #f3e4c9;
-  min-height: 100vh;
   padding-bottom: 50px;
   margin-top: 4rem;
+  height:fit-content;
 }
 
 /* Header Tab: Black/White */
@@ -977,7 +977,9 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.vault-content { padding: 40px 2%; }
+.vault-content { padding: 40px 2%;
+
+}
 
 /* Grid: 3 Items per row */
 .vault-grid {
@@ -990,11 +992,13 @@ button:disabled {
 .artifact-card {
   display: flex;
   background-color: #4b3621; /* Deep chocolate brown */
-  height: 320px;
+  height: 24rem;
   border: 4px solid  #ffd78d;
   cursor: pointer;
   transition: transform 0.2s ease;
   overflow: hidden;
+  padding-right: 1.4rem;
+  width: 100%;
 }
 
 .artifact-card:hover { transform: translateY(-5px); }
@@ -1013,17 +1017,19 @@ button:disabled {
 /* Right Side (Details) */
 .artifact-details {
   flex: 1;
-  padding: 25px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   color: #fde2c0;
   text-align: left;
+  width: 60%;
+  height: 100%;
 }
 
 /* Typography matching the image */
 .artifact-title {
   font-family: 'Press Start 2P', cursive;
-  font-size: 1em;
+  font-size: 0.9em;
   font-weight: 700;
   color: #f3a04b; /* Golden Orange */
   margin: 0;
@@ -1031,7 +1037,7 @@ button:disabled {
 
 .artifact-subtitle {
   font-family: 'Press Start 2P', cursive;
-  font-size: 14px;
+  font-size:0.7rem;
   color: #fde2c0;
   opacity: 0.8;
 }
@@ -1048,27 +1054,76 @@ button:disabled {
   color: #f8f8f8;
   opacity: 0.7;
   margin-bottom: 5px;
+  text-align: left;
 }
 
 .description-text {
   font-family: 'Press Start 2P', cursive;
-  font-size: 11px;
-  line-height: 1.5;
-  color: #fde2c0;
-  /* Multi-line truncation to keep the card size stable */
+  font-size: 12px;
+  line-height: 1.4;
+  color: #ccc;
+  margin-bottom: 10px;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bid-action-group {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+/* The Number Input */
+.bid-action-group input {
+  width: 60px;
+  background: #111;
+  border: 1px solid #f3a04b; /* Matches your gold text */
+  color: #fff;
+  font-family: inherit; /* Inherits your pixel font */
+  padding: 4px;
+  font-size: 12px;
+  outline: none;
+}
+
+.bid-action-group input::placeholder {
+  color: #666;
+}
+
+/* The Place Bid Button */
+.btn-pixel-bid {
+  background: #f3a04b;
+  color: #000;
+  border: 1px solid #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.btn-pixel-bid:hover {
+  background: #fff;
+  border-color: #f3a04b;
+  color: #000;
+  box-shadow: 0 0 8px rgba(243, 160, 75, 0.6);
 }
 
 /* Stats Footer Area */
 .stats-footer {
-  display: flex;
-  justify-content: space-between;
+  /* display: flex; */
+  justify-content: space-between; /* Pushes bidding to the left, timer to the right */
   align-items: flex-end;
-  border-top: 1px solid rgba(253, 226, 192, 0.1);
-  padding-top: 15px;
+  margin-top: auto; /* Forces the footer to the absolute bottom of the card */
+  gap: 10px;
+  border-top: 3px solid rgba(251, 231, 207, 0.46);
+  padding-top: 0.8rem;
+  text-align: left;
+
 }
 
 .stat-value {
@@ -1077,6 +1132,10 @@ button:disabled {
   font-weight: 100;
   display: flex;
   align-items: center;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
 }
 
 .gold { color: #ffcb10; }
@@ -1090,3 +1149,118 @@ button:disabled {
 
 .ending-soon { color: #ff4d4d; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: 0.5; } }
+
+
+/* --- RARITY EFFECTS --- */
+
+/* 1. Common: Stays with the standard brown/black sharp look */
+.artifact-card.Common {
+  border: 2px solid #000;
+}
+
+/* 2. Rare: Neon Blue Glow */
+.artifact-card.Rare {
+  border: 2px solid #00d4ff;
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4), 8px 8px 0px rgba(0,0,0,0.5);
+}
+.artifact-card.Rare .artifact-title {
+  color: #00d4ff; /* Title matches the glow */
+}
+
+/* 3. Legendary: Gold Sparkle & Glitch */
+.artifact-card.Legendary {
+  border: 2px solid #ffcb10;
+  box-shadow: 0 0 25px rgba(255, 203, 16, 0.5), 8px 8px 0px rgba(0,0,0,0.6);
+  position: relative;
+}
+
+/* Gold Glitch Overlay on the Image */
+.artifact-card.Legendary .artifact-preview::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: linear-gradient(rgba(255, 203, 16, 0.1) 50%, rgba(0, 0, 0, 0.1) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+  animation: scanline 0.2s infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+/* Sparkling Text for Legendary */
+.artifact-card.Legendary .artifact-title {
+  color: #ffcb10;
+  text-shadow: 2px 2px 0px #000, 0 0 10px rgba(255, 203, 16, 0.8);
+
+}
+
+@keyframes gold-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.4); }
+}
+
+
+.rarity-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 8px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 8px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  z-index: 10;
+}
+
+/* Color coding for the tags */
+.Rare .rarity-tag {
+  background: #00d4ff;
+  box-shadow: 2px 2px 0px #000;
+}
+
+.Legendary .rarity-tag {
+  background: #ffcb10;
+  box-shadow: 2px 2px 0px #000;
+  /* animation: gold-pulse 2s infinite; */
+}
+
+/* --- EMPTY VAULT STATE (USER DASHBOARD) --- */
+.empty-vault-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px dashed #f3a04b;
+  border-radius: 4px;
+  text-align: center;
+  width: 100%;
+  margin: 10px 0;
+  /* animation: fadeIn 0.4s ease-out; */
+}
+
+.empty-vault-state i {
+  font-size: 32px;
+  color: #f3a04b;
+  margin-bottom: 15px;
+  opacity: 0.8;
+}
+
+.empty-vault-state h3 {
+  color: #f3a04b;
+  font-size: 16px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.empty-vault-state p {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}

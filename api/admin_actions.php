@@ -1,47 +1,46 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once dirname(__FILE__) . '/../config/database.php';
+require_once '../config/database.php';
 
-$data = json_decode(file_get_contents("php://input"));
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
 
-if (!empty($data->action) && !empty($data->user_id)) {
+$json_data = json_decode(file_get_contents("php://input"), true);
+$item_id = $json_data['item_id'] ?? $_POST['item_id'] ?? null;
+
+if (!empty($item_id)) {
     try {
-        if ($data->action === 'block') {
-            $reason = !empty($data->reason) ? $data->reason : "Violation of community guidelines.";
+        // 1. Delete bids (We know this table exists)
+        try {
+            $stmt1 = $conn->prepare("DELETE FROM bids WHERE item_id = ?");
+            $stmt1->execute([$item_id]);
+        } catch(PDOException $e) { /* Ignore if table missing */ }
 
-            // 1. Update User Status
-            $query = "UPDATE users SET status = 'blocked', block_reason = :reason WHERE id = :id";
-            $stmt = $conn->prepare($query);
-            $stmt->execute(['reason' => $reason, 'id' => $data->user_id]);
+        // 2. Delete notifications
+        try {
+            $stmt2 = $conn->prepare("DELETE FROM notifications WHERE item_id = ?");
+            $stmt2->execute([$item_id]);
+        } catch(PDOException $e) { /* Ignore if table missing */ }
 
-            // 2. Send System Notification to the User
-            $notifQuery = "INSERT INTO notifications (user_id, message, type)
-                           VALUES (:user_id, :message, 'system_alert')";
-            $notifStmt = $conn->prepare($notifQuery);
-            $notifStmt->execute([
-                'user_id' => $data->user_id,
-                'message' => "Your account has been restricted. Reason: " . $reason
-            ]);
+        // REMOVED the 'likes' query entirely since the table doesn't exist.
 
-            echo json_encode(["status" => "success", "message" => "User has been blocked."]);
+        // 3. NOW delete the actual artifact
+        $stmtItem = $conn->prepare("DELETE FROM items WHERE id = ?");
+        $stmtItem->execute([$item_id]);
+
+        if ($stmtItem->rowCount() > 0) {
+            echo json_encode(["status" => "success", "message" => "Artifact and all associated records successfully destroyed."]);
+        } else {
+            echo json_encode(["status" => "error", "message" => "Artifact not found in database."]);
         }
-
-        if ($data->action === 'unblock') {
-            $query = "UPDATE users SET status = 'active', block_reason = NULL WHERE id = :id";
-            $stmt = $conn->prepare($query);
-            $stmt->execute(['id' => $data->user_id]);
-            echo json_encode(["status" => "success", "message" => "User restored."]);
-        }
-
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+    } catch(PDOException $e) {
+        // This will now only catch critical errors related to the items table itself
+        echo json_encode(["status" => "error", "message" => "SQL Error: " . $e->getMessage()]);
     }
 } else {
-    echo json_encode(["status" => "error", "message" => "Incomplete request."]);
+    echo json_encode(["status" => "error", "message" => "Incomplete request: No item_id received by the server."]);
 }
 ?>

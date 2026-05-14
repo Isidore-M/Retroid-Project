@@ -164,8 +164,12 @@ getChatHistory(userId: number, partnerId: number, itemId: number) {
   return this.http.get(`${this.apiUrl}/get_chat_history.php?user_id=${userId}&partner_id=${partnerId}&item_id=${itemId}`);
 }
 
+getItemHistory(id: number) {
+  return this.http.get(`${this.apiUrl}/get_item_history.php?item_id=${id}`);
+}
 
-
-
+adminDeleteAction(itemId: number) {
+  return this.http.post(`${this.apiUrl}/admin_actions.php`, { item_id: itemId });
+}
 
 }

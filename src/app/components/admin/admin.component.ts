@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ItemService } from '../../services/item';
-import { ToastService } from '../../services/toast.service'; // Ensure this service exists
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-admin',
@@ -13,26 +13,26 @@ import { ToastService } from '../../services/toast.service'; // Ensure this serv
   styleUrls: ['./admin.component.css']
 })
 export class AdminComponent implements OnInit {
-  // UI State
   activeTab: 'users' | 'market' | 'bidding' = 'users';
   adminUser: any;
 
-  // Data Arrays
   users: any[] = [];
   allItems: any[] = [];
   biddingItems: any[] = [];
 
-  // Model for adding to Bidding Room
+  // UPDATED: Added description and rarity defaults
   newArtifact: any = {
     name: '',
     price: null,
     image: null as File | null,
-    expiry_custom: '' // Field for the Admin-controlled timer
+    expiry_custom: '',
+    description: '',
+    rarity: 'Common'
   };
 
   constructor(
     private itemService: ItemService,
-    public toastService: ToastService, // Must be PUBLIC to avoid the template error
+    public toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -44,9 +44,6 @@ export class AdminComponent implements OnInit {
     this.loadAllData();
   }
 
-  /**
-   * Fetches the complete "God View" of the system
-   */
   loadAllData() {
     this.itemService.getAdminOversight().subscribe({
       next: (res: any) => {
@@ -56,10 +53,6 @@ export class AdminComponent implements OnInit {
           this.biddingItems = this.allItems.filter(item => item.is_bidding == 1);
           this.cdr.detectChanges();
         }
-      },
-      error: (err) => {
-        console.error("Oversight data error:", err);
-        this.toastService.show("Failed to sync system data.", "error");
       }
     });
   }
@@ -69,12 +62,8 @@ export class AdminComponent implements OnInit {
     this.loadAllData();
   }
 
-  /**
-   * Ban Hammer Logic
-   */
   blockUser(user: any) {
     const reason = prompt(`Why are you blocking ${user.username}?`);
-
     if (reason !== null && reason.trim() !== '') {
       this.itemService.blockUser(user.id, reason).subscribe({
         next: (res: any) => {
@@ -82,10 +71,8 @@ export class AdminComponent implements OnInit {
             user.status = 'blocked';
             user.block_reason = reason;
             this.toastService.show(`${user.username} has been restricted.`, "warning");
-            this.cdr.detectChanges();
           }
-        },
-        error: () => this.toastService.show("System error: Hammer failed to drop.", "error")
+        }
       });
     }
   }
@@ -97,10 +84,8 @@ export class AdminComponent implements OnInit {
           user.status = 'active';
           user.block_reason = null;
           this.toastService.show(`Access restored for ${user.username}.`, "success");
-          this.cdr.detectChanges();
         }
-      },
-      error: () => this.toastService.show("Could not unblock user.", "error")
+      }
     });
   }
 
@@ -111,9 +96,6 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  /**
-   * Deploys a new artifact with Admin-controlled Timer
-   */
   postArtifact() {
     if (!this.newArtifact.name || !this.newArtifact.price || !this.newArtifact.image) {
       this.toastService.show("Blueprints incomplete! Image and data required.", "warning");
@@ -121,13 +103,9 @@ export class AdminComponent implements OnInit {
     }
 
     let mysqlExpiry = '';
-
-    // Check if Admin set a custom date
     if (this.newArtifact.expiry_custom) {
-      // Formats HTML5 datetime-local to MySQL format
       mysqlExpiry = this.newArtifact.expiry_custom.replace('T', ' ') + ':00';
     } else {
-      // Default fallback: 24 Hours from now
       const expiryDate = new Date();
       expiryDate.setHours(expiryDate.getHours() + 24);
       mysqlExpiry = expiryDate.toISOString().slice(0, 19).replace('T', ' ');
@@ -142,6 +120,10 @@ export class AdminComponent implements OnInit {
     formData.append('is_bidding', '1');
     formData.append('expiry_time', mysqlExpiry);
 
+    // NEW: Append description and rarity to the request
+    formData.append('description', this.newArtifact.description);
+    formData.append('rarity', this.newArtifact.rarity);
+
     this.itemService.postItem(formData).subscribe({
       next: (res: any) => {
         if (res.status === 'success') {
@@ -152,21 +134,30 @@ export class AdminComponent implements OnInit {
           this.toastService.show("Server Error: " + res.message, "error");
         }
       },
-      error: (err) => this.toastService.show("Deployment failed. Connection issue.", "error")
+      error: () => this.toastService.show("Deployment failed. Connection issue.", "error")
     });
   }
 
   private resetArtifactForm() {
-    this.newArtifact = { name: '', price: null, image: null, expiry_custom: '' };
+    // Reset the new fields too
+    this.newArtifact = { name: '', price: null, image: null, expiry_custom: '', description: '', rarity: 'Common' };
   }
 
-  /**
-   * Admin-only deletion for marketplace oversight
-   */
+  // FIX: Real deletion logic bridging to your PHP file
   deleteItem(itemId: number) {
-    if (confirm("Permanently delete this marketplace listing?")) {
-      // Logic for deletion (can be added to ItemService)
-      this.toastService.show("Item removed from marketplace.", "error");
+    if (confirm("SYSTEM WARNING: Permanently delete this item? This cannot be undone.")) {
+      // Create this method in your item.service.ts
+      this.itemService.adminDeleteAction(itemId).subscribe({
+        next: (res: any) => {
+          if (res.status === 'success') {
+            this.toastService.show("Item permanently erased.", "success");
+            this.loadAllData(); // Refresh tables
+          } else {
+            this.toastService.show("Error: " + res.message, "error");
+          }
+        },
+        error: () => this.toastService.show("Network failed during deletion.", "error")
+      });
     }
   }
 }

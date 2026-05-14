@@ -228,3 +228,33 @@
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+
+#calendar{
+  color:#f4f4f4
+}
+
+/* ADD TO admin.component.css */
+
+.full-chamber-warning {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  padding: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.btn-deploy.btn-disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+  border: 1px solid #444;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}

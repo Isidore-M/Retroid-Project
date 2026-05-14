@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { ToastService } from '../../services/toast.service';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit,OnDestroy {
   user: any;
 
 
@@ -452,5 +452,44 @@ viewNotification(notif: any) {
   }
 }
 
+
+
+// Rename 'submitBid()' to 'placeBid'
+placeBid(item: any, bidInput: HTMLInputElement) {
+  const bidValue = Number(bidInput.value);
+  const currentPrice = Number(item.current_bid || item.price);
+  const userPoints = Number(this.user.points);
+
+  // 1. Validation Logic
+  if (!bidValue || bidValue <= currentPrice) {
+    this.toastService.show(`Bid must be higher than ${currentPrice} XP!`, "warning");
+    return;
+  }
+
+  if (bidValue > userPoints) {
+    this.toastService.show("Insufficient XP balance!", "error");
+    return;
+  }
+
+  // 2. Call the Service
+  this.itemService.placeBid(item.id, this.user.id, bidValue).subscribe({
+    next: (res: any) => {
+      if (res.status === 'success') {
+        const msg = res.was_extended ? "Time extended! You lead." : "High bid recorded!";
+        this.toastService.show(msg, res.was_extended ? "warning" : "success");
+
+        // Sync points
+        this.user.points = Number(res.new_balance);
+        localStorage.setItem('user', JSON.stringify(this.user));
+
+        bidInput.value = ''; // Clear the input
+        this.loadMarketplace(); // Refresh data
+      } else {
+        this.toastService.show(res.message, "error");
+      }
+    },
+    error: () => this.toastService.show("Connection error.", "error")
+  });
+}
 
 }

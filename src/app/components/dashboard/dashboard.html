@@ -108,45 +108,90 @@
   </div>
 
   <div class="vault-content">
-    <div class="vault-grid">
-      <div class="artifact-card" *ngFor="let item of biddingItems" (click)="openBiddingModal(item)">
+
+    <div class="vault-grid" *ngIf="biddingItems.length > 0; else emptyVault">
+      <div class="artifact-card"
+           *ngFor="let art of biddingItems"
+           [class]="art.rarity"
+           (click)="openBiddingModal(art)">
 
         <div class="artifact-preview">
-          <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+          <img [src]="'http://localhost/retroid/public/items/' + art.image_path"
                (error)="$any($event.target).src='/assets/placeholder.jpg'">
+
+          <div class="bid-terminal">
+            <div class="terminal-header">LIVE_FEED</div>
+            <div class="terminal-body custom-scroll">
+              <ng-container *ngIf="art.history && art.history.length > 0; else noHistory">
+                <div class="terminal-line" *ngFor="let log of art.history">
+                  <span class="t-user">> {{ log.username }}</span>
+                  <span class="t-amount">bid {{ log.bid_amount }} PX</span>
+                </div>
+              </ng-container>
+              <ng-template #noHistory>
+                <div class="terminal-line empty">> WAITING_FOR_BIDS...</div>
+              </ng-template>
+            </div>
+          </div>
+
+          <div class="rarity-tag" *ngIf="art.rarity && art.rarity !== 'Common'">
+            {{ art.rarity | uppercase }}
+          </div>
         </div>
 
         <div class="artifact-details">
           <div class="header-group">
-            <h2 class="artifact-title">{{ item.name }}</h2>
+            <h2 class="artifact-title">{{ art.name }}</h2>
             <span class="artifact-subtitle">Collectible</span>
           </div>
 
           <div class="description-group">
             <h4 class="label-tiny">Description</h4>
-            <p class="description-text">{{ item.description }}</p>
+            <p class="description-text">{{ art.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
           </div>
 
           <div class="stats-footer">
-            <div class="stat-item">
-              <span class="label-tiny">high bid</span>
-              <div class="stat-value gold">
-                {{ item.current_bid || item.price }}
-                <img src="/coin.svg" class="coin-icon">
+            <div class="bid-input-container" *ngIf="art.displayTimer !== 'CLOSED'; else soldTemplate">
+              <div class="stat-item mb-2">
+                <span class="label-tiny">Current lead</span>
+                <div class="stat-value gold">
+                  {{ art.current_bid || art.price }}
+                  <img src="/coin.svg" class="coin-icon">
+                </div>
               </div>
+
+              <!-- <div class="bid-action-group">
+                <input type="number" #bidInput [placeholder]="(art.current_bid || art.price) + 10" (click)="$event.stopPropagation()">
+                <button class="btn-pixel-bid" (click)="placeBid(art, bidInput); $event.stopPropagation()">PLACE_BID</button>
+              </div> -->
             </div>
 
-            <div class="stat-item">
+            <div class="stat-item text-end">
               <span class="label-tiny">Expires in</span>
-              <div class="stat-value orange" [class.ending-soon]="item.isEndingSoon">
-                {{ item.displayTimer || '00:00:00' }}
+              <div class="stat-value orange" [class.ending-soon]="art.isEndingSoon">
+                {{ art.displayTimer || '00:00:00' }}
               </div>
             </div>
           </div>
+
+          <ng-template #soldTemplate>
+            <div class="sold-banner">
+              <h4 class="pixel-font">SOLD TO {{ art.highest_bidder || 'NONE' }}</h4>
+            </div>
+          </ng-template>
         </div>
 
       </div>
     </div>
+
+    <ng-template #emptyVault>
+      <div class="empty-vault-state">
+        <i class="bi bi-shield-lock-fill"></i>
+        <h3 class="pixel-font">VAULT SECURED</h3>
+        <p>There are no active auctions at this time.<br>Check back later for new high-tier artifacts.</p>
+      </div>
+    </ng-template>
+
   </div>
 </section>
 

@@ -17,7 +17,7 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
     try {
         $conn->beginTransaction();
 
-        // 1. Fetch item & owner details
+        // 1. Fetch item & owner details (FOR UPDATE prevents race conditions)
         $timeStmt = $conn->prepare("SELECT name, user_id as owner_id, expiry_time, current_bid, price FROM items WHERE id = ? FOR UPDATE");
         $timeStmt->execute([$data->item_id]);
         $item = $timeStmt->fetch(PDO::FETCH_ASSOC);
@@ -26,8 +26,9 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
             throw new Exception("Artifact not found in the chamber.");
         }
 
-        if ($item['expiry_time'] && strtotime($item['expiry_time']) < time()) {
-            throw new Exception("The auction has ended! The artifact is no longer available.");
+        $expiryTimestamp = strtotime($item['expiry_time']);
+        if ($item['expiry_time'] && $expiryTimestamp < time()) {
+            throw new Exception("The auction has ended!");
         }
 
         // 2. Verify the new bidder
@@ -36,7 +37,7 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
         $bidder = $userStmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$bidder || $bidder['points'] < $data->amount) {
-            throw new Exception("Insufficient XP balance in your vault.");
+            throw new Exception("Insufficient XP balance.");
         }
 
         // 3. Enforce higher bids
@@ -50,7 +51,11 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
         $prevBidStmt->execute([$data->item_id]);
         $prevBid = $prevBidStmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($prevBid && $prevBid['user_id'] != $data->user_id) {
+        if ($prevBid) {
+            if ($prevBid['user_id'] == $data->user_id) {
+                throw new Exception("You are already the leading bidder!");
+            }
+
             // Refund points logic
             $refundStmt = $conn->prepare("UPDATE users SET points = points + ? WHERE id = ?");
             $refundStmt->execute([$prevBid['bid_amount'], $prevBid['user_id']]);
@@ -69,24 +74,36 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
             ]);
         }
 
-        // 5. Record the new bid
+        // --- 5. ANTI-SNIPE LOGIC ---
+        // If bid is placed within the last 60 seconds, extend by 1 minute
+        $secondsRemaining = $expiryTimestamp - time();
+        $newExpiry = $item['expiry_time'];
+        $wasExtended = false;
+
+        if ($secondsRemaining > 0 && $secondsRemaining < 60) {
+            $newExpiry = date("Y-m-d H:i:s", $expiryTimestamp + 60);
+            $wasExtended = true;
+        }
+
+        // 6. Record the new bid
         $insertBid = $conn->prepare("INSERT INTO bids (item_id, user_id, bid_amount) VALUES (?, ?, ?)");
         $insertBid->execute([$data->item_id, $data->user_id, $data->amount]);
 
-        // 6. Update the item's lead
-        $updateItem = $conn->prepare("UPDATE items SET current_bid = ? WHERE id = ?");
-        $updateItem->execute([$data->amount, $data->item_id]);
+        // 7. Update the item's lead and expiry time
+        $updateItem = $conn->prepare("UPDATE items SET current_bid = ?, expiry_time = ? WHERE id = ?");
+        $updateItem->execute([$data->amount, $newExpiry, $data->item_id]);
 
-        // 7. Deduct XP from new leader
+        // 8. Deduct XP from new leader
         $updateUser = $conn->prepare("UPDATE users SET points = points - ? WHERE id = ?");
         $updateUser->execute([$data->amount, $data->user_id]);
 
-        // --- 8. NOTIFY THE ITEM OWNER ---
+        // --- 9. NOTIFY THE ITEM OWNER ---
         if ($item['owner_id'] != $data->user_id) {
             $notifOwner = $conn->prepare("INSERT INTO notifications (user_id, sender_id, item_id, type, message, is_read)
                                         VALUES (:uid, :sid, :iid, 'bid', :msg, 0)");
 
             $ownerMsg = $bidder['username'] . " placed a " . $data->amount . " XP bid on your item: " . $item['name'];
+            if ($wasExtended) { $ownerMsg .= " (Auction extended!)"; }
 
             $notifOwner->execute([
                 ':uid' => $item['owner_id'],
@@ -99,8 +116,10 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
         $conn->commit();
         echo json_encode([
             "status" => "success",
-            "message" => "Your bid has been registered!",
-            "new_balance" => $bidder['points'] - $data->amount
+            "message" => $wasExtended ? "Bid recorded! Time extended by 60s." : "Your bid has been registered!",
+            "new_balance" => $bidder['points'] - $data->amount,
+            "was_extended" => $wasExtended,
+            "new_expiry" => $newExpiry
         ]);
 
     } catch (Exception $e) {
