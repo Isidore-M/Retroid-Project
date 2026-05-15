@@ -172,4 +172,19 @@ adminDeleteAction(itemId: number) {
   return this.http.post(`${this.apiUrl}/admin_actions.php`, { item_id: itemId });
 }
 
+/**
+   * CLAIMS A WON ARTIFACT
+   * Sends a request to permanently assign an expired auction item to the winner.
+   */
+  claimWonArtifact(itemId: number, userId: number) {
+    const payload = {
+      item_id: itemId,
+      user_id: userId
+    };
+
+    // Make sure 'this.apiUrl' matches whatever variable you use for your backend path
+    // (it might be this.baseUrl depending on how you set up the service)
+    return this.http.post(`${this.apiUrl}/claim_artifact.php`, payload);
+  }
+
 }

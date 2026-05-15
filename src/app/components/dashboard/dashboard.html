@@ -177,7 +177,7 @@
 
           <ng-template #soldTemplate>
             <div class="sold-banner">
-              <h4 class="pixel-font">SOLD TO {{ art.highest_bidder || 'NONE' }}</h4>
+              <h4 class="pixel-font-sold">SOLD TO {{ art.highest_bidder || 'NONE' }}</h4>
             </div>
           </ng-template>
         </div>
@@ -376,6 +376,20 @@
 </div>
             </div>
           </ng-template>
+
+                    <ng-container *ngIf="selectedItem?.displayTimer === 'CLOSED'">
+            <div class="state-container closed-state text-center justify-content-center">
+              <i class="bi bi-trophy-fill gold-icon mb-3" style="font-size: 3rem; color: #f5b849;"></i>
+              <h2 class="title-gold mb-3">AUCTION CONCLUDED</h2>
+              <p class="desc-text text-white">
+                This Artifact is no longer available. It has been won by
+                <strong class="gold-text">@{{ selectedItem?.highest_bidder || 'Unknown Voyager' }}</strong>.
+              </p>
+              <p class="small mt-3 text-muted">Wait for the next opportunity.</p>
+
+              <button class="btn-split-confirm mt-4" data-bs-dismiss="modal">Acknowledge</button>
+            </div>
+          </ng-container>
 
         </div>
       </div>

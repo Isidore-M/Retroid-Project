@@ -103,6 +103,7 @@
   object-fit: cover;
 }
 .pixel-font { font-family: 'Press Start 2P', cursive; font-size: 2.5rem; }
+.pixel-font-sold{ font-family: 'Press Start 2P', cursive; font-size: 1.3rem; }
 
 .pixel-font2{
   font-size: 1.2em;

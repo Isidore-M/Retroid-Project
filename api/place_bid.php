@@ -64,7 +64,7 @@ if (!empty($data->item_id) && !empty($data->user_id) && !empty($data->amount)) {
             $notifOutbid = $conn->prepare("INSERT INTO notifications (user_id, sender_id, item_id, type, message, is_read)
                                          VALUES (:uid, :sid, :iid, 'outbid', :msg, 0)");
 
-            $outbidMsg = "You were outbid on " . $item['name'] . "! " . $prevBid['bid_amount'] . " XP has been returned.";
+            $outbidMsg = "You were outbid and lost on " . $item['name'] . "! " . $prevBid['bid_amount'] . " XP has been returned to your wallet.";
 
             $notifOutbid->execute([
                 ':uid' => $prevBid['user_id'],

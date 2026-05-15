@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router'; // 👈 Added ActivatedRoute
 import { FormsModule } from '@angular/forms';
 import { ItemService } from '../../../services/item';
+import { ToastService } from '../../../services/toast.service';
+// (Make sure the path matches where your toast service actually lives, just like in your dashboard!)
 
 @Component({
   selector: 'app-profile',
@@ -34,7 +36,8 @@ export class ProfileComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute, // 👈 Added for notification deep-linking
     private itemService: ItemService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public toastService: ToastService
   ) {}
 
 ngOnInit() {
@@ -185,4 +188,25 @@ ngOnInit() {
     localStorage.removeItem('user');
     this.router.navigate(['/login']);
   }
+
+
+  claimArtifact(item: any) {
+  // Call your item service to claim it
+  this.itemService.claimWonArtifact(item.id, this.user.id).subscribe({
+    next: (res: any) => {
+      if (res.status === 'success') {
+        this.toastService.show("Artifact claimed! Added to your collection.", "success");
+
+        // Instantly update the UI so the button changes to "COLLECTED"
+        item.is_claimed = 1;
+      } else {
+        this.toastService.show(res.message || "Failed to claim artifact.", "error");
+      }
+    },
+    error: (err) => {
+      console.error("Claim error:", err);
+      this.toastService.show("Connection error.", "error");
+    }
+  });
+}
 }
