@@ -341,58 +341,71 @@
         </div>
 
         <div class="split-right">
-          <ng-container *ngIf="user?.points <= (selectedItem?.current_bid || selectedItem?.price); else normalState">
-            <div class="state-container error-state">
-              <h2 class="title-gold large-title">You don't have<br>enough to place a bid</h2>
-              <img src="/pixely.svg" class="pixely" alt="coin">
-              <div class="wallet-row mt-auto">
-                <span class="wallet-text">Your wallet</span>
-                <div class="wallet-value">
-                  {{ user?.points || 0 }}
-                  <img src="/coin.svg" class="pixel-coin" alt="coin">
-                </div>
-              </div>
+
+          <ng-container *ngIf="selectedItem?.displayTimer === 'CLOSED'; else openAuctionState">
+            <div class="state-container closed-state text-center d-flex flex-column justify-content-center align-items-center h-100">
+              <i class="bi bi-trophy-fill mb-4" style="font-size: 4.5rem; color: #f5b849;"></i>
+              <h2 class="title-gold mb-4" style="font-size: 28px;">AUCTION CONCLUDED</h2>
+
+              <p class="desc-text" style="color: #c0b3a9; font-size: 16px; text-align: center; line-height: 1.6;">
+                This Artifact is no longer available.<br>It has been won by :
+                <strong style="color: #f5b849; font-size: 20px; display: inline-block; margin-top: 5px;">
+    @{{ (selectedItem?.highest_bidder && selectedItem?.highest_bidder !== '') ? selectedItem.highest_bidder : 'Unknown Voyager' }}
+  </strong>
+              </p>
+
+              <p class="small mt-auto mb-3" style="color: #888;">Wait for the next opportunity.</p>
+              <button class="btn-split-confirm w-100" data-bs-dismiss="modal">Acknowledge</button>
             </div>
           </ng-container>
 
-          <ng-template #normalState>
-            <div class="state-container normal-state">
-              <h2 class="title-gold mb-4">Place your bid</h2>
-              <h4 class="subtitle-gold">{{ selectedItem?.name }}</h4>
+          <ng-template #openAuctionState>
 
-              <div class="desc-block">
-                <span class="desc-label">Description</span>
-                <p class="desc-text">{{ selectedItem?.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
-              </div>
-
-              <div class="wallet-row mt-auto">
-                <span class="wallet-text">Your wallet</span>
-                <div class="wallet-value">
-                  {{ user?.points || 0 }}
-                  <img src="/coin.svg" class="pixel-coin" alt="coin">
+            <ng-container *ngIf="user?.points <= (selectedItem?.current_bid || selectedItem?.price); else normalState">
+              <div class="state-container error-state d-flex flex-column h-100">
+                <h2 class="title-gold large-title">You don't have<br>enough to place a bid</h2>
+                <img src="/pixely.svg" class="pixely" alt="coin" style="margin: 20px 0;">
+                <div class="wallet-row mt-auto">
+                  <span class="wallet-text">Your wallet</span>
+                  <div class="wallet-value">
+                    {{ user?.points || 0 }}
+                    <img src="/coin.svg" class="pixel-coin" alt="coin">
+                  </div>
                 </div>
               </div>
+            </ng-container>
 
-              <div class="bidding-action-row mt-4">
-                <input type="number" #modalInput [value]="(selectedItem?.current_bid || selectedItem?.price) + 10" class="split-input">
-                <button class="btn-split-confirm" (click)="placeBid(modalInput.value)">Confirm Bid</button>
+            <ng-template #normalState>
+              <div class="state-container normal-state d-flex flex-column h-100">
+                <h2 class="title-gold mb-4">Place your bid</h2>
+                <h4 class="subtitle-gold">{{ selectedItem?.name }}</h4>
+
+                <div class="desc-block">
+                  <span class="desc-label">Description</span>
+                  <p class="desc-text">{{ selectedItem?.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
+                </div>
+
+                <div class="wallet-row mt-auto">
+                  <span class="wallet-text">Your wallet</span>
+                  <div class="wallet-value">
+                    {{ user?.points || 0 }}
+                    <img src="/coin.svg" class="pixel-coin" alt="coin">
+                  </div>
+                </div>
+
+                <div class="bidding-action-row mt-4">
+                  <input type="number" #modalInput [value]="(selectedItem?.current_bid || selectedItem?.price) + 10" class="split-input">
+                  <button class="btn-split-confirm" (click)="placeBid(modalInput.value)">Confirm Bid</button>
+                </div>
               </div>
-            </div>
+            </ng-template>
+
           </ng-template>
 
-          <ng-container *ngIf="selectedItem?.displayTimer === 'CLOSED'">
-            <div class="state-container closed-state text-center justify-content-center">
-              <i class="bi bi-trophy-fill gold-icon mb-3" style="font-size: 3rem; color: #f5b849;"></i>
-              <h2 class="title-gold mb-3">AUCTION CONCLUDED</h2>
-              <p class="desc-text text-white">
-                This Artifact is no longer available. It has been won by
-                <strong class="gold-text">@{{ selectedItem?.highest_bidder || 'Unknown Voyager' }}</strong>.
-              </p>
-              <p class="small mt-3 text-muted">Wait for the next opportunity.</p>
-              <button class="btn-split-confirm mt-4" data-bs-dismiss="modal">Acknowledge</button>
-            </div>
-          </ng-container>
         </div>
+
+
+
       </div>
     </div>
   </div>
