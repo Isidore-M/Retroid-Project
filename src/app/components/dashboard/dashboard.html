@@ -37,164 +37,161 @@
 
       <div class="nav-icons ms-4 d-flex align-items-center">
         <div class="notif-wrapper position-relative me-3">
-  <button class="icon-btn" (click)="toggleNotificationDropdown()">
-    <i class="bi bi-bell"></i>
-    <span class="notif-badge pixel-font" *ngIf="unreadCount > 0">
-      {{ unreadCount > 9 ? '9+' : unreadCount }}
-    </span>
-  </button>
+          <button class="icon-btn" (click)="toggleNotificationDropdown()">
+            <i class="bi bi-bell"></i>
+            <span class="notif-badge pixel-font" *ngIf="unreadCount > 0">
+              {{ unreadCount > 9 ? '9+' : unreadCount }}
+            </span>
+          </button>
 
-  <div class="notif-dropdown shadow-lg"
-       *ngIf="showNotifDropdown"
-       (click)="$event.stopPropagation()">
+          <div class="notif-dropdown shadow-lg"
+               *ngIf="showNotifDropdown"
+               (click)="$event.stopPropagation()">
 
-    <div class="notif-header d-flex justify-content-between align-items-center">
-      <h6 class="m-0 pixel-font-sm">Notifications</h6>
-      <button class="btn-mark-read pixel-font"
-              *ngIf="unreadCount > 0"
-              (click)="markAllAsRead()">
-        Mark as read
-      </button>
-    </div>
+            <div class="notif-header d-flex justify-content-between align-items-center">
+              <h6 class="m-0 pixel-font-sm">Notifications</h6>
+              <button class="btn-mark-read pixel-font"
+                      *ngIf="unreadCount > 0"
+                      (click)="markAllAsRead()">
+                Mark as read
+              </button>
+            </div>
 
-    <div class="notif-body custom-scroll">
-      <div class="notif-item d-flex align-items-start"
-           *ngFor="let n of notifications"
-           [class.unread]="n.is_read == 0"
-           [ngClass]="n.type">
+            <div class="notif-body custom-scroll">
+              <div class="notif-item d-flex align-items-start"
+                   *ngFor="let n of notifications"
+                   [class.unread]="n.is_read == 0"
+                   [ngClass]="n.type">
 
-        <div class="notif-icon-container">
-          <i class="bi" [ngClass]="{
-            'bi-heart-fill': n.type === 'like',
-            'bi-hammer': n.type === 'outbid',
-            'bi-trophy-fill': n.type === 'won',
-            'bi-cash-coin': n.type === 'sold'
-          }"></i>
+                <div class="notif-icon-container">
+                  <i class="bi" [ngClass]="{
+                    'bi-heart-fill': n.type === 'like',
+                    'bi-hammer': n.type === 'outbid',
+                    'bi-trophy-fill': n.type === 'won',
+                    'bi-cash-coin': n.type === 'sold'
+                  }"></i>
+                </div>
+
+                <div class="notif-content ms-3">
+                  <p class="notif-message m-0">{{ n.message }}</p>
+                  <small class="notif-time text-muted">
+                    {{ n.created_at | date:'shortTime' }}
+                  </small>
+                </div>
+              </div>
+
+              <div *ngIf="notifications.length === 0" class="empty-notif text-center p-4">
+                <i class="bi bi-mailbox2 d-block fs-1 text-muted mb-2"></i>
+                <span class="text-muted pixel-font-sm">No new data.</span>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div class="notif-content ms-3">
-          <p class="notif-message m-0">{{ n.message }}</p>
-          <small class="notif-time text-muted">
-            {{ n.created_at | date:'shortTime' }}
-          </small>
-        </div>
-      </div>
-
-      <div *ngIf="notifications.length === 0" class="empty-notif text-center p-4">
-        <i class="bi bi-mailbox2 d-block fs-1 text-muted mb-2"></i>
-        <span class="text-muted pixel-font-sm">No new data.</span>
-      </div>
-    </div>
-  </div>
-</div>
         <button class="btn-logout ms-2" (click)="logout()">
           <i class="bi bi-power"></i>
           <span class="logout-text ms-1">Exit</span>
         </button>
       </div>
     </div>
-
-
-
   </nav>
 
   <section class="hero-banner">
     <img src="/banner-hero.jpg" class="hero-img" alt="Hero background">
   </section>
 
-<section class="bidding-vault">
-  <div class="vault-tab">
-    THE BIDDING ROOM
-  </div>
+  <section class="bidding-vault">
+    <div class="vault-tab">
+      THE BIDDING ROOM
+    </div>
 
-  <div class="vault-content">
+    <div class="vault-content">
 
-    <div class="vault-grid" *ngIf="biddingItems.length > 0; else emptyVault">
-      <div class="artifact-card"
-           *ngFor="let art of biddingItems"
-           [class]="art.rarity"
-           (click)="openBiddingModal(art)">
+      <div class="vault-grid" *ngIf="biddingItems.length > 0; else emptyVault">
+        <div class="artifact-card"
+             *ngFor="let art of biddingItems"
+             [class]="art.rarity"
+             (click)="openBiddingModal(art)">
 
-        <div class="artifact-preview">
-          <img [src]="'http://localhost/retroid/public/items/' + art.image_path"
-               (error)="$any($event.target).src='/assets/placeholder.jpg'">
+          <div class="artifact-preview">
+            <img [src]="'http://localhost/retroid/public/items/' + art.image_path"
+                 (error)="$any($event.target).src='/assets/placeholder.jpg'">
 
-          <div class="bid-terminal">
-            <div class="terminal-header">LIVE_FEED</div>
-            <div class="terminal-body custom-scroll">
-              <ng-container *ngIf="art.history && art.history.length > 0; else noHistory">
-                <div class="terminal-line" *ngFor="let log of art.history">
-                  <span class="t-user">> {{ log.username }}</span>
-                  <span class="t-amount">bid {{ log.bid_amount }} PX</span>
+            <div class="bid-terminal">
+              <div class="terminal-header">LIVE_FEED</div>
+              <div class="terminal-body custom-scroll">
+                <ng-container *ngIf="art.history && art.history.length > 0; else noHistory">
+                  <div class="terminal-line" *ngFor="let log of art.history">
+                    <span class="t-user">> {{ log.username }}</span>
+                    <span class="t-amount">bid {{ log.bid_amount }} PX</span>
+                  </div>
+                </ng-container>
+                <ng-template #noHistory>
+                  <div class="terminal-line empty">> WAITING_FOR_BIDS...</div>
+                </ng-template>
+              </div>
+            </div>
+
+            <div class="rarity-tag" *ngIf="art.rarity && art.rarity !== 'Common'">
+              {{ art.rarity | uppercase }}
+            </div>
+          </div>
+
+          <div class="artifact-details">
+            <div class="header-group">
+              <h2 class="artifact-title">{{ art.name }}</h2>
+              <span class="artifact-subtitle">Collectible</span>
+            </div>
+
+            <div class="description-group">
+              <h4 class="label-tiny">Description</h4>
+              <p class="description-text">{{ art.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
+            </div>
+
+            <div class="stats-footer">
+              <div class="bid-input-container" *ngIf="art.displayTimer !== 'CLOSED'; else soldTemplate">
+                <div class="stat-item mb-2">
+                  <span class="label-tiny">Current lead</span>
+                  <div class="stat-value gold">
+                    {{ art.current_bid || art.price }}
+                    <img src="/coin.svg" class="coin-icon">
+                  </div>
                 </div>
-              </ng-container>
-              <ng-template #noHistory>
-                <div class="terminal-line empty">> WAITING_FOR_BIDS...</div>
-              </ng-template>
+
+                <div class="bid-action-group">
+                  <button class="btn-pixel-bid" style="width: 100%;" (click)="openBiddingModal(art); $event.stopPropagation()">
+                    ENTER AUCTION
+                  </button>
+                </div>
+              </div>
+
+              <div class="stat-item text-end">
+                <span class="label-tiny">Expires in</span>
+                <div class="stat-value orange" [class.ending-soon]="art.isEndingSoon">
+                  {{ art.displayTimer || '00:00:00' }}
+                </div>
+              </div>
             </div>
+
+            <ng-template #soldTemplate>
+              <div class="sold-banner">
+                <h4 class="pixel-font-sold">SOLD TO {{ art.highest_bidder || 'NONE' }}</h4>
+              </div>
+            </ng-template>
           </div>
 
-          <div class="rarity-tag" *ngIf="art.rarity && art.rarity !== 'Common'">
-            {{ art.rarity | uppercase }}
-          </div>
         </div>
-
-        <div class="artifact-details">
-          <div class="header-group">
-            <h2 class="artifact-title">{{ art.name }}</h2>
-            <span class="artifact-subtitle">Collectible</span>
-          </div>
-
-          <div class="description-group">
-            <h4 class="label-tiny">Description</h4>
-            <p class="description-text">{{ art.description || 'Rare digital artifact from the Retroid legacy collection.' }}</p>
-          </div>
-
-          <div class="stats-footer">
-  <div class="bid-input-container" *ngIf="art.displayTimer !== 'CLOSED'; else soldTemplate">
-    <div class="stat-item mb-2">
-      <span class="label-tiny">Current lead</span>
-      <div class="stat-value gold">
-        {{ art.current_bid || art.price }}
-        <img src="/coin.svg" class="coin-icon">
       </div>
-    </div>
 
-    <div class="bid-action-group">
-      <button class="btn-pixel-bid" style="width: 100%;" (click)="openBiddingModal(art); $event.stopPropagation()">
-        ENTER AUCTION
-      </button>
-    </div>
-  </div>
-
-  <div class="stat-item text-end">
-    <span class="label-tiny">Expires in</span>
-    <div class="stat-value orange" [class.ending-soon]="art.isEndingSoon">
-      {{ art.displayTimer || '00:00:00' }}
-    </div>
-  </div>
-</div>
-
-          <ng-template #soldTemplate>
-            <div class="sold-banner">
-              <h4 class="pixel-font-sold">SOLD TO {{ art.highest_bidder || 'NONE' }}</h4>
-            </div>
-          </ng-template>
+      <ng-template #emptyVault>
+        <div class="empty-vault-state">
+          <i class="bi bi-shield-lock-fill"></i>
+          <h3 class="pixel-font">VAULT SECURED</h3>
+          <p>There are no active auctions at this time.<br>Check back later for new high-tier artifacts.</p>
         </div>
+      </ng-template>
 
-      </div>
     </div>
-
-    <ng-template #emptyVault>
-      <div class="empty-vault-state">
-        <i class="bi bi-shield-lock-fill"></i>
-        <h3 class="pixel-font">VAULT SECURED</h3>
-        <p>There are no active auctions at this time.<br>Check back later for new high-tier artifacts.</p>
-      </div>
-    </ng-template>
-
-  </div>
-</section>
+  </section>
 
   <section class="action-bar d-flex justify-content-between align-items-center mt-5">
     <div class="filter-buttons d-flex gap-2">
@@ -215,62 +212,64 @@
     </div>
   </section>
 
- <section class="most-popular mt-5">
-  <div class="section-header d-flex justify-content-between align-items-center mb-4">
-    <h2 class="section-title">Marketplace</h2>
-    <a href="#" class="view-all">View all ></a>
-  </div>
+  <section class="most-popular mt-5">
+    <div class="section-header d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title">Marketplace</h2>
+      <a href="#" class="view-all">View all ></a>
+    </div>
 
-  <div class="popular-grid" *ngIf="marketplaceItems.length > 0; else noMarket">
-    <div class="popular-card"
-         *ngFor="let item of marketplaceItems"
-         (click)="openItemDetail(item)"
-         style="cursor: pointer;">
+    <div class="popular-grid" *ngIf="marketplaceItems.length > 0; else noMarket">
+      <div class="popular-card"
+           *ngFor="let item of marketplaceItems"
+           (click)="openItemDetail(item)"
+           data-bs-toggle="modal"
+           data-bs-target="#itemDetailModal"
+           style="cursor: pointer;">
 
-      <div class="popular-img-box">
-        <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
-             [alt]="item.name"
-             (error)="$any($event.target).src='/assets/placeholder.jpg'">
-      </div>
+        <div class="popular-img-box">
+          <img [src]="'http://localhost/retroid/public/items/' + item.image_path.split(',')[0]"
+               [alt]="item.name"
+               (error)="$any($event.target).src='/assets/placeholder.jpg'">
+        </div>
 
-      <div class="popular-footer d-flex justify-content-between align-items-center p-3">
-        <div class="item-details">
-          <h3 class="pop-item-name">{{ item.name }}</h3>
-          <div class="pop-meta d-flex align-items-center">
-            <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
-            <span class="dot-separator mx-2">•</span>
+        <div class="popular-footer d-flex justify-content-between align-items-center p-3">
+          <div class="item-details">
+            <h3 class="pop-item-name">{{ item.name }}</h3>
+            <div class="pop-meta d-flex align-items-center">
+              <span class="posted-by">posted by <strong>{{ item.username }}</strong></span>
+              <span class="dot-separator mx-2">•</span>
 
-            <span class="pop-price">
-              <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
-              <ng-container *ngIf="item.currency_type === 'points'">
-                {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
-              </ng-container>
-            </span>
+              <span class="pop-price">
+                <ng-container *ngIf="item.currency_type === 'dollars'">${{ item.price }}</ng-container>
+                <ng-container *ngIf="item.currency_type === 'points'">
+                  {{ item.price }} <img src="/coin.svg" class="coin-icon" alt="coins">
+                </ng-container>
+              </span>
+            </div>
+          </div>
+
+          <div class="like-container d-flex align-items-center"
+               (click)="toggleLike(item); $event.stopPropagation()"
+               style="cursor: pointer;">
+            <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
+              <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
+            </svg>
+            <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="like-container d-flex align-items-center"
-             (click)="toggleLike(item); $event.stopPropagation()"
-             style="cursor: pointer;">
-          <svg class="pixel-heart" [class.liked]="item.isLiked" viewBox="0 0 10 10" width="20" height="20">
-            <path d="M2 1h2v1H2V1zm4 0h2v1H6V1zM1 2h3v1H1V2zm4 0h3v1H5V2zM0 3h9v3H0V3zm1 3h7v1H1V6zm1 1h5v1H2V7zm2 1h1v1H4V8z" />
-          </svg>
-          <span class="like-count ms-2">{{ item.likes || 0 }} likes</span>
+    <ng-template #noMarket>
+      <div class="empty-state-container">
+        <div class="d-flex flex-column justify-content-center align-items-center text-center">
+          <i class="bi bi-controller fs-1 text-muted mb-3"></i>
+          <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
+          <p class="text-muted">Try changing your filters or searching for something else.</p>
         </div>
       </div>
-    </div>
-  </div>
-
-  <ng-template #noMarket>
-    <div class="empty-state-container">
-      <div class="d-flex flex-column justify-content-center align-items-center text-center">
-        <i class="bi bi-controller fs-1 text-muted mb-3"></i>
-        <h3 class="text-muted" style="font-family: var(--pixel-font), sans-serif;">No items found</h3>
-        <p class="text-muted">Try changing your filters or searching for something else.</p>
-      </div>
-    </div>
-  </ng-template>
-</section>
+    </ng-template>
+  </section>
 </div>
 
 <div class="modal fade" id="postItemModal" tabindex="-1" aria-hidden="true">
@@ -286,6 +285,7 @@
             <label class="pixel-label">Item Name</label>
             <input type="text" [(ngModel)]="newItem.name" class="retro-input w-100" placeholder="e.g. Vintage Console">
           </div>
+
           <div class="form-group mb-3">
             <label class="pixel-label">Category</label>
             <select [(ngModel)]="newItem.category" class="retro-input w-100">
@@ -295,24 +295,32 @@
               <option value="Others">Others</option>
             </select>
           </div>
-         <div class="form-group mb-3">
-  <label class="pixel-label">Price & Currency</label>
-  <div class="d-flex gap-2">
-    <input type="number"
-           [(ngModel)]="newItem.price"
-           class="retro-input flex-grow-1"
-           placeholder="0.00">
 
-    <select [(ngModel)]="newItem.currencyType" class="retro-input currency-select">
-      <option value="points">XP</option>
-      <option value="dollars">$ USD</option>
-    </select>
-  </div>
-</div>
-          <div class="form-group mb-4">
-            <label class="pixel-label">Asset Image</label>
-            <input type="file" (change)="onFileSelected($event)" class="form-control-file">
+          <div class="form-group mb-3">
+            <label class="pixel-label">Price & Currency</label>
+            <div class="d-flex gap-2">
+              <input type="number" [(ngModel)]="newItem.price" class="retro-input flex-grow-1" placeholder="0.00">
+              <select [(ngModel)]="newItem.currencyType" class="retro-input currency-select">
+                <option value="points">XP</option>
+                <option value="dollars">$ USD</option>
+              </select>
+            </div>
           </div>
+
+          <div class="form-group mb-3">
+            <label class="pixel-label">Description</label>
+            <textarea [(ngModel)]="newItem.description" class="retro-input w-100" rows="3" placeholder="Describe your item..."></textarea>
+          </div>
+
+          <div class="form-group mb-4">
+            <label class="pixel-label">Asset Images (Up to 3)</label>
+            <input type="file" multiple accept="image/*" (change)="onFileSelected($event)" class="form-control-file">
+
+            <div class="d-flex gap-2 mt-2" *ngIf="imagePreviews.length > 0">
+              <img *ngFor="let preview of imagePreviews" [src]="preview" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #000;">
+            </div>
+          </div>
+
           <button class="btn-pixel-post w-100" (click)="submitItem()">Deploy to Market</button>
         </div>
       </div>
@@ -323,19 +331,16 @@
 <div class="modal fade" id="bidModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg split-modal">
     <div class="modal-content border-0 bg-transparent">
-
       <div class="modal-body p-0 d-flex flex-column flex-md-row">
-
         <button type="button" class="btn-close-split" data-bs-dismiss="modal" aria-label="Close">
           <i class="bi bi-x-lg"></i>
         </button>
 
         <div class="split-left">
-          <img [src]="selectedItem ? 'http://localhost/retroid/public/items/' + selectedItem.image_path : '/assets/placeholder.jpg'" alt="Artifact">
+          <img [src]="selectedItem ? 'http://localhost/retroid/public/items/' + selectedItem.image_path.split(',')[0] : '/assets/placeholder.jpg'" alt="Artifact">
         </div>
 
         <div class="split-right">
-
           <ng-container *ngIf="user?.points <= (selectedItem?.current_bid || selectedItem?.price); else normalState">
             <div class="state-container error-state">
               <h2 class="title-gold large-title">You don't have<br>enough to place a bid</h2>
@@ -353,7 +358,6 @@
           <ng-template #normalState>
             <div class="state-container normal-state">
               <h2 class="title-gold mb-4">Place your bid</h2>
-
               <h4 class="subtitle-gold">{{ selectedItem?.name }}</h4>
 
               <div class="desc-block">
@@ -370,14 +374,13 @@
               </div>
 
               <div class="bidding-action-row mt-4">
-  <input type="number" #modalInput [value]="(selectedItem?.current_bid || selectedItem?.price) + 10" class="split-input">
-
-  <button class="btn-split-confirm" (click)="placeBid(modalInput.value)">Confirm Bid</button>
-</div>
+                <input type="number" #modalInput [value]="(selectedItem?.current_bid || selectedItem?.price) + 10" class="split-input">
+                <button class="btn-split-confirm" (click)="placeBid(modalInput.value)">Confirm Bid</button>
+              </div>
             </div>
           </ng-template>
 
-                    <ng-container *ngIf="selectedItem?.displayTimer === 'CLOSED'">
+          <ng-container *ngIf="selectedItem?.displayTimer === 'CLOSED'">
             <div class="state-container closed-state text-center justify-content-center">
               <i class="bi bi-trophy-fill gold-icon mb-3" style="font-size: 3rem; color: #f5b849;"></i>
               <h2 class="title-gold mb-3">AUCTION CONCLUDED</h2>
@@ -386,14 +389,11 @@
                 <strong class="gold-text">@{{ selectedItem?.highest_bidder || 'Unknown Voyager' }}</strong>.
               </p>
               <p class="small mt-3 text-muted">Wait for the next opportunity.</p>
-
               <button class="btn-split-confirm mt-4" data-bs-dismiss="modal">Acknowledge</button>
             </div>
           </ng-container>
-
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -410,55 +410,58 @@
     </div>
   </div>
 </div>
-<!--   Modal fo the items in market place-->
-<div class="modal fade show d-block" *ngIf="selectedMarketItem">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content retro-modal shadow-lg">
 
-      <div class="modal-header border-0 pb-0">
-        <h5 class="pixel-font text-warning m-0">{{ selectedMarketItem.name }}</h5>
-        <button type="button" class="btn-close btn-close-white" (click)="selectedMarketItem = null"></button>
-      </div>
+<div class="modal fade" id="itemDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content market-modal-content" *ngIf="selectedMarketItem">
 
-      <div class="modal-body text-center pt-2">
-        <div class="modal-img-container mb-3 border-pixel">
-          <img [src]="'http://localhost/retroid/public/items/' + selectedMarketItem.image_path"
-               class="img-fluid rounded shadow-sm"
-               (error)="$any($event.target).src='/assets/placeholder.jpg'">
+      <div class="modal-body p-0 d-flex flex-column flex-lg-row">
+
+        <div class="market-left-pane">
+          <img [src]="'http://localhost/retroid/public/items/' + parsedImages[currentImageIndex]" alt="Item image">
+
+          <div class="carousel-controls" *ngIf="parsedImages.length > 1">
+            <button class="btn-carousel" (click)="prevImage()"><i class="bi bi-arrow-left"></i></button>
+            <button class="btn-carousel" (click)="nextImage()"><i class="bi bi-arrow-right"></i></button>
+          </div>
         </div>
 
-        <div class="price-display mb-3">
-          <span class="pixel-font-sm text-muted">ASKING PRICE: </span>
-          <h3 class="pixel-font text-success d-inline">
-            <ng-container *ngIf="selectedMarketItem.currency_type === 'dollars'">$</ng-container>
-            {{ selectedMarketItem.price }}
-            <img *ngIf="selectedMarketItem.currency_type === 'points'" src="/coin.svg" class="coin-icon-lg" alt="coins">
-          </h3>
-        </div>
+        <div class="market-right-pane">
 
-        <p class="text-light pixel-font-xs mb-4 opacity-75">
-          {{ selectedMarketItem.description || 'This rare artifact was recently discovered in the Retroid vaults.' }}
-        </p>
+          <button type="button" class="btn-close-market" data-bs-dismiss="modal" aria-label="Close">
+            <i class="bi bi-x-lg"></i>
+          </button>
 
-                  <div class="d-flex flex-column gap-3 px-3">
-            <button type="button" class="retro-btn btn-yellow w-100" (click)="sendInquiry(selectedMarketItem)">
-              <i class="bi bi-chat-dots me-2"></i> I'm interested
+          <h1 class="market-title">{{ selectedMarketItem.name }}</h1>
+          <p class="market-owner">Posted by {{ selectedMarketItem.username || 'Anonymous' }}</p>
+
+          <div class="market-price-row mt-4">
+            <span class="price-label">Asking price :</span>
+            <span class="price-value">
+              <img *ngIf="selectedMarketItem.currency_type === 'points'" src="/coin.svg" class="coin-icon">
+              {{ selectedMarketItem.currency_type === 'dollars' ? '$' : '' }}{{ selectedMarketItem.price | number:'1.2-2' }}
+            </span>
+          </div>
+
+          <div class="market-desc-box mt-4">
+            <span class="desc-label">Description:</span>
+            <p class="desc-text">{{ selectedMarketItem.description || 'A rare artifact discovered in the Retroid vaults.' }}</p>
+          </div>
+
+          <div class="market-actions mt-auto">
+            <button class="btn-market-yellow block-btn mb-3" (click)="sendInquiry(selectedMarketItem)">
+              <i class="bi bi-envelope me-2"></i> I'm interested
             </button>
 
-            <div class="custom-offer-group d-flex">
-              <input type="text" [(ngModel)]="customMessage" class="retro-input flex-grow-1" placeholder="Type an offer...">
-              <button type="button" class="retro-btn btn-yellow-sm ms-2" (click)="sendInquiry(selectedMarketItem, customMessage)">
-                Send
-              </button>
+            <div class="offer-input-group">
+              <input type="text" placeholder="Type offer..." [(ngModel)]="customMessage">
+              <button class="btn-market-yellow small-btn" (click)="sendInquiry(selectedMarketItem, customMessage)">Send</button>
             </div>
           </div>
+
+        </div>
       </div>
 
-      <div class="modal-footer border-0 pt-0">
-        <small class="text-muted pixel-font-xs">Owner: {{ selectedMarketItem.username }}</small>
-      </div>
     </div>
   </div>
 </div>
-<div class="modal-backdrop fade show" *ngIf="selectedMarketItem" (click)="selectedMarketItem = null"></div>
-<div class="modal-backdrop fade show" *ngIf="selectedMarketItem"></div>
