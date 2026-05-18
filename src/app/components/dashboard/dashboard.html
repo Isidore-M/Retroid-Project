@@ -113,7 +113,8 @@
              (click)="openBiddingModal(art)">
 
           <div class="artifact-preview">
-            <img [src]="'http://localhost/retroid/public/items/' + art.image_path"
+
+            <img [src]="art.image_path ? 'http://localhost/retroid/public/items/' + art.image_path.split(',')[0] : '/assets/placeholder.jpg'"
                  (error)="$any($event.target).src='/assets/placeholder.jpg'">
 
             <div class="bid-terminal">
@@ -313,11 +314,20 @@
           </div>
 
           <div class="form-group mb-4">
-            <label class="pixel-label">Asset Images (Up to 3)</label>
-            <input type="file" multiple accept="image/*" (change)="onFileSelected($event)" class="form-control-file">
+            <label class="pixel-label">Asset Images ({{ newItem.images.length }}/3)</label>
 
-            <div class="d-flex gap-2 mt-2" *ngIf="imagePreviews.length > 0">
-              <img *ngFor="let preview of imagePreviews" [src]="preview" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #000;">
+            <input *ngIf="newItem.images.length < 3" type="file" multiple accept="image/*" (change)="onFileSelected($event)" class="form-control-file mb-2">
+
+            <div class="d-flex gap-2 mt-2 flex-wrap" *ngIf="imagePreviews.length > 0">
+              <div class="position-relative" *ngFor="let preview of imagePreviews; let i = index">
+                <img [src]="preview" class="img-thumbnail" style="width: 70px; height: 70px; object-fit: cover; border: 2px solid #000;">
+
+                <button class="btn btn-sm btn-danger position-absolute top-0 end-0 p-0"
+                        style="width: 20px; height: 20px; font-size: 10px; transform: translate(30%, -30%); border: 1px solid black;"
+                        (click)="removeImage(i)">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -393,10 +403,11 @@
                   </div>
                 </div>
 
-                <div class="bidding-action-row mt-4">
-                  <input type="number" #modalInput [value]="(selectedItem?.current_bid || selectedItem?.price) + 10" class="split-input">
-                  <button class="btn-split-confirm" (click)="placeBid(modalInput.value)">Confirm Bid</button>
-                </div>
+               <div class="bidding-action-row mt-4">
+                <input type="number" #bidInput [value]="bidAmount" class="split-input">
+
+                <button class="btn-split-confirm" (click)="placeBid(bidInput.value)">Confirm Bid</button>
+              </div>
               </div>
             </ng-template>
 

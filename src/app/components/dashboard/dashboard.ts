@@ -271,21 +271,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onFileSelected(event: any) {
     const files = event.target.files;
     if (files) {
-      this.newItem.images = [];
-      this.imagePreviews = [];
-
-      // Limit to max 3 files
-      const limit = Math.min(files.length, 3);
+      // Calculate how many more slots we have available (Max 3)
+      const availableSlots = 3 - this.newItem.images.length;
+      const limit = Math.min(files.length, availableSlots);
 
       for (let i = 0; i < limit; i++) {
         const file = files[i];
         this.newItem.images.push(file);
 
         const reader = new FileReader();
-        reader.onload = (e: any) => this.imagePreviews.push(e.target.result);
+        reader.onload = (e: any) => {
+          this.imagePreviews.push(e.target.result);
+          this.cdr.detectChanges(); // Force UI to update immediately
+        };
         reader.readAsDataURL(file);
       }
+
+      // Reset the input value so the user can select more files one by one!
+      event.target.value = '';
     }
+  }
+
+
+  removeImage(index: number) {
+    this.newItem.images.splice(index, 1);
+    this.imagePreviews.splice(index, 1);
+    this.cdr.detectChanges();
   }
 
   // --- NEW: MULTI-IMAGE SUBMIT LOGIC ---
@@ -295,7 +306,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.newItem.name || !this.newItem.category || !this.newItem.price || this.newItem.images.length === 0) {
+    // Fixed validation: Explicitly check for null/undefined so '0' is allowed
+    if (!this.newItem.name || !this.newItem.category || this.newItem.price === null || this.newItem.images.length === 0) {
       this.toastService.show("All fields and at least one image are required.", "warning");
       return;
     }
@@ -303,12 +315,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const formData = new FormData();
     formData.append('name', this.newItem.name);
     formData.append('category', this.newItem.category);
-    formData.append('price', (this.newItem.price ?? 0).toString());
+    formData.append('price', this.newItem.price.toString());
     formData.append('currency', this.newItem.currencyType);
     formData.append('description', this.newItem.description);
     formData.append('user_id', this.user.id);
 
-    // Append multiple files
+    // Append multiple files safely
     for (let i = 0; i < this.newItem.images.length; i++) {
       formData.append('images[]', this.newItem.images[i]);
     }
@@ -321,10 +333,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.loadMarketplace();
           this.triggerModalClose('postItemModal');
         } else {
-          this.toastService.show(res.message || "Upload failed.", "error");
+          // Show the exact error the PHP script sends back
+          this.toastService.show(res.message || "Upload failed. Server rejected.", "error");
         }
       },
-      error: () => this.toastService.show("Upload failed. Check PHP connection.", "error")
+      error: (err) => {
+        console.error("Deploy Error:", err);
+        this.toastService.show("Upload failed. Check your console/PHP connection.", "error");
+      }
     });
   }
 
@@ -457,57 +473,113 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  placeBid(inputValue: string) {
+
+placeBid(rawInputValue: any) {
+    console.log("--- BID PROCESS STARTED ---");
+    console.log("Raw Input Received:", rawInputValue);
+
     if (!this.selectedItem) {
+      console.error("ERROR: No artifact selected in memory.");
       this.toastService.show("System error: No artifact selected.", "error");
       return;
     }
 
-    const bidValue = Number(inputValue);
+    // Force strict Number conversion to prevent string bugs
+    const bidValue = Number(rawInputValue);
     const currentPrice = Number(this.selectedItem.current_bid || this.selectedItem.price);
     const userPoints = Number(this.user.points);
 
+    console.log("Parsed Bid:", bidValue, "| Current Lead:", currentPrice, "| User XP:", userPoints);
+
+    // 1. Validation Checks
     if (!bidValue || bidValue <= currentPrice) {
+      console.warn("REJECTED: Bid is too low or invalid.");
       this.toastService.show(`Bid too low! Must be higher than ${currentPrice} XP.`, "warning");
       return;
     }
 
     if (bidValue > userPoints) {
+      console.warn("REJECTED: User does not have enough XP.");
       this.toastService.show("Insufficient XP! You need more coins.", "error");
       return;
     }
 
+    console.log("Validation passed! Sending to backend...");
+
+    // 2. Server Request
     this.itemService.placeBid(this.selectedItem.id, this.user.id, bidValue).subscribe({
       next: (res: any) => {
+        console.log("Server Response:", res);
+
         if (res.status === 'success') {
-          const msg = res.message || "BID REGISTERED: You are now the leader!";
-          this.toastService.show(msg, "success");
+          this.toastService.show(res.message || "BID REGISTERED: You are now the leader!", "success");
 
           if (res.new_balance !== undefined) {
             this.user.points = Number(res.new_balance);
             localStorage.setItem('user', JSON.stringify(this.user));
           }
 
+          // Optimistic UI Data Update
           this.selectedItem.current_bid = bidValue;
+          this.selectedItem.highest_bidder_id = this.user.id;
           this.selectedItem.highest_bidder = this.user.username;
-          this.loadMarketplace();
+
+          const cardInArray = this.biddingItems.find(item => item.id == this.selectedItem.id);
+
+          if (cardInArray) {
+            cardInArray.current_bid = bidValue;
+            cardInArray.highest_bidder_id = this.user.id;
+            cardInArray.highest_bidder = this.user.username;
+
+            if (!cardInArray.history) {
+              cardInArray.history = [];
+            }
+            cardInArray.history.unshift({
+              username: this.user.username,
+              bid_amount: bidValue
+            });
+          }
+
+          this.cdr.detectChanges();
+          console.log("UI Optimistically Updated!");
+
+          // Close Modal cleanly
+          const modalElement = document.getElementById('bidModal');
+          if (modalElement) {
+            const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
+            if (modalInstance) {
+              modalInstance.hide();
+            }
+          }
 
         } else {
+          console.error("Backend rejected the bid:", res.message);
           this.toastService.show(res.message || "Bidding failed.", "error");
-        }
 
-        const modalElement = document.getElementById('bidModal');
-        if (modalElement) {
-          const modalInstance = (window as any).bootstrap.Modal.getInstance(modalElement);
-          if (modalInstance) {
-            modalInstance.hide();
+          // ==========================================
+          // NEW: HANDLE EXPIRED AUCTION REJECTIONS
+          // ==========================================
+          // If the backend explicitly tells us it's over, force the UI to update!
+          if (res.message && res.message.toLowerCase().includes('ended')) {
+            console.log("Auction ended! Forcing UI into CLOSED state...");
+
+            // 1. Instantly flip the modal to the Trophy screen
+            this.selectedItem.displayTimer = 'CLOSED';
+
+            // 2. Fetch the fresh database data to see who actually won
+            this.loadMarketplace();
+
+            // 3. Force Angular to redraw the screen immediately
+            this.cdr.detectChanges();
           }
         }
       },
       error: (err) => {
-        console.error("HTTP Error:", err);
+        console.error("HTTP/Network Error:", err);
         this.toastService.show("Connection Error: Auction house unreachable.", "error");
       }
     });
   }
+
+
 }

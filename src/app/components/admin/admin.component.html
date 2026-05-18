@@ -61,7 +61,7 @@
       <div class="admin-grid-container" *ngIf="allItems.length > 0; else noMarket">
         <div class="admin-item-card" *ngFor="let item of allItems">
           <div class="admin-card-img">
-            <img [src]="'http://localhost/retroid/public/items/' + item.image_path"
+            <img [src]="item.image_path ? 'http://localhost/retroid/public/items/' + item.image_path.split(',')[0] : '/assets/placeholder.jpg'"
                  (error)="$any($event.target).src='/assets/placeholder.jpg'">
             <span class="admin-badge" [class.bidding-bg]="item.is_bidding == 1">
               {{ item.is_bidding == 1 ? 'Artifact' : 'Market' }}
@@ -132,8 +132,25 @@
               </div>
 
               <div class="form-group">
-                <label>Visual Asset</label>
-                <input type="file" (change)="onFileSelected($event)" class="custom-file-input" [disabled]="biddingItems.length >= 3">
+                <label>Visual Assets ({{ newArtifact.images.length }}/3)</label>
+                <input *ngIf="newArtifact.images.length < 3"
+                       type="file"
+                       multiple
+                       accept="image/*"
+                       (change)="onFileSelected($event)"
+                       class="custom-file-input mb-2"
+                       [disabled]="biddingItems.length >= 3">
+
+                <div class="d-flex gap-2 mt-2 flex-wrap" *ngIf="imagePreviews.length > 0">
+                  <div class="position-relative" *ngFor="let preview of imagePreviews; let i = index">
+                    <img [src]="preview" class="img-thumbnail" style="width: 70px; height: 70px; object-fit: cover; border: 2px solid #333; background: #000;">
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 p-0"
+                            style="width: 20px; height: 20px; font-size: 10px; transform: translate(30%, -30%); border: 1px solid black;"
+                            (click)="removeImage(i)">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div class="full-chamber-warning" *ngIf="biddingItems.length >= 3">
@@ -153,7 +170,7 @@
           <h3 class="pixel-font mb-3" style="font-size: 1.2rem;">Currently Auctioning ({{ biddingItems.length }}/3)</h3>
           <div class="active-bidding-list">
             <div class="market-item-row" *ngFor="let item of biddingItems">
-              <img [src]="'http://localhost/retroid/public/items/' + item.image_path" class="admin-item-thumb">
+              <img [src]="item.image_path ? 'http://localhost/retroid/public/items/' + item.image_path.split(',')[0] : '/assets/placeholder.jpg'" class="admin-item-thumb">
               <div class="item-info">
                 <h4>{{ item.name }}</h4>
                 <p>High Bid: <strong>{{ item.current_bid || item.price }} XP</strong></p>

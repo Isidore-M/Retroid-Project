@@ -20,15 +20,17 @@ export class AdminComponent implements OnInit {
   allItems: any[] = [];
   biddingItems: any[] = [];
 
-  // UPDATED: Added description and rarity defaults
+  // Now uses an array for images to match the new backend
   newArtifact: any = {
     name: '',
     price: null,
-    image: null as File | null,
     expiry_custom: '',
     description: '',
-    rarity: 'Common'
+    rarity: 'Common',
+    images: [] as File[]
   };
+
+  imagePreviews: string[] = [];
 
   constructor(
     private itemService: ItemService,
@@ -50,7 +52,7 @@ export class AdminComponent implements OnInit {
         if (res.status === 'success') {
           this.users = res.data.users;
           this.allItems = res.data.items;
-          this.biddingItems = this.allItems.filter(item => item.is_bidding == 1);
+          this.biddingItems = this.allItems.filter((item: any) => item.is_bidding == 1);
           this.cdr.detectChanges();
         }
       }
@@ -90,15 +92,36 @@ export class AdminComponent implements OnInit {
   }
 
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.newArtifact.image = file;
+    const files = event.target.files;
+    if (files) {
+      const availableSlots = 3 - this.newArtifact.images.length;
+      const limit = Math.min(files.length, availableSlots);
+
+      for (let i = 0; i < limit; i++) {
+        const file = files[i];
+        this.newArtifact.images.push(file);
+
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          this.imagePreviews.push(e.target.result);
+          this.cdr.detectChanges();
+        };
+        reader.readAsDataURL(file);
+      }
+
+      event.target.value = '';
     }
   }
 
+  removeImage(index: number) {
+    this.newArtifact.images.splice(index, 1);
+    this.imagePreviews.splice(index, 1);
+    this.cdr.detectChanges();
+  }
+
   postArtifact() {
-    if (!this.newArtifact.name || !this.newArtifact.price || !this.newArtifact.image) {
-      this.toastService.show("Blueprints incomplete! Image and data required.", "warning");
+    if (!this.newArtifact.name || !this.newArtifact.price || this.newArtifact.images.length === 0) {
+      this.toastService.show("Blueprints incomplete! At least 1 image and data required.", "warning");
       return;
     }
 
@@ -106,23 +129,29 @@ export class AdminComponent implements OnInit {
     if (this.newArtifact.expiry_custom) {
       mysqlExpiry = this.newArtifact.expiry_custom.replace('T', ' ') + ':00';
     } else {
-      const expiryDate = new Date();
-      expiryDate.setHours(expiryDate.getHours() + 24);
-      mysqlExpiry = expiryDate.toISOString().slice(0, 19).replace('T', ' ');
+      // THE FIX: Exact Local Time calculation
+      const now = new Date();
+      now.setHours(now.getHours() + 24);
+
+      // Offset UTC to get perfect local YYYY-MM-DD HH:mm:ss
+      const offsetMs = now.getTimezoneOffset() * 60 * 1000;
+      const localTime = new Date(now.getTime() - offsetMs);
+      mysqlExpiry = localTime.toISOString().slice(0, 19).replace('T', ' ');
     }
 
     const formData = new FormData();
     formData.append('name', this.newArtifact.name);
     formData.append('price', this.newArtifact.price.toString());
     formData.append('category', 'Artifact');
-    formData.append('image', this.newArtifact.image);
     formData.append('user_id', this.adminUser.id);
     formData.append('is_bidding', '1');
     formData.append('expiry_time', mysqlExpiry);
-
-    // NEW: Append description and rarity to the request
     formData.append('description', this.newArtifact.description);
     formData.append('rarity', this.newArtifact.rarity);
+
+    for (let i = 0; i < this.newArtifact.images.length; i++) {
+      formData.append('images[]', this.newArtifact.images[i]);
+    }
 
     this.itemService.postItem(formData).subscribe({
       next: (res: any) => {
@@ -139,19 +168,17 @@ export class AdminComponent implements OnInit {
   }
 
   private resetArtifactForm() {
-    // Reset the new fields too
-    this.newArtifact = { name: '', price: null, image: null, expiry_custom: '', description: '', rarity: 'Common' };
+    this.newArtifact = { name: '', price: null, expiry_custom: '', description: '', rarity: 'Common', images: [] };
+    this.imagePreviews = [];
   }
 
-  // FIX: Real deletion logic bridging to your PHP file
   deleteItem(itemId: number) {
     if (confirm("SYSTEM WARNING: Permanently delete this item? This cannot be undone.")) {
-      // Create this method in your item.service.ts
       this.itemService.adminDeleteAction(itemId).subscribe({
         next: (res: any) => {
           if (res.status === 'success') {
             this.toastService.show("Item permanently erased.", "success");
-            this.loadAllData(); // Refresh tables
+            this.loadAllData();
           } else {
             this.toastService.show("Error: " + res.message, "error");
           }
