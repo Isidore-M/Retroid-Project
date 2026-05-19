@@ -136,3 +136,32 @@ All transactions within Retroid are powered by our proprietary digital currency,
 Monitoring Balances: Your current XP balance is consistently displayed in the navigation interface and within the bidding modal to ensure transparency before committing to a purchase.
 
 Insufficient Funds: The system strictly prohibits negative balances. Attempting to place a bid or purchase an item without the requisite XP will trigger a system block until the account is sufficiently funded.
+
+
+III-ROOM OF IMPROVEMENT
+
+Phase 1: Security & Authentication
+JWT (JSON Web Tokens): Currently, user sessions rely on storing user objects directly in the browser's localStorage. Transitioning to HTTP-only cookies and JWTs will securely encrypt user sessions and prevent local tampering.
+
+Database Transactions (ACID Compliance): While the PHP backend currently checks the user's XP before placing a bid, high-traffic auctions require SQL transactions. Implementing BEGIN TRANSACTION and COMMIT ensures that if two users bid at the exact same millisecond, the database locks the row and processes them sequentially, preventing double-spending or corrupted leads.
+
+Advanced File Validation: Beyond checking the file extension, the PHP backend should inspect the MIME type and file headers to ensure a user isn't uploading a malicious script disguised as an image.
+
+Phase 2: Real-Time Architecture
+WebSockets Integration: The current architecture uses Optimistic UI updates and background polling to keep the bidding chamber fresh. Integrating WebSockets (via Node.js/Socket.io or PHP Ratchet) would push data from the server to the clients instantly, removing the need for polling and saving server bandwidth.
+
+Automated Outbid Notifications: Implementing a mail server (like SendGrid or AWS SES) to instantly email users when they lose their lead. This is the primary driver of engagement for live auction platforms.
+
+Phase 3: Media & Performance Scaling
+Server-Side Image Compression: The PHP upload script currently saves images exactly as they are uploaded. Adding the GD Library or ImageMagick to the PHP backend will allow the system to automatically compress images, strip EXIF data, and convert them to next-gen formats like WebP.
+
+Thumbnail Generation: Generating a 200x200 pixel thumbnail alongside the high-resolution image ensures the marketplace grid loads instantly, even on mobile networks.
+
+Server-Side Pagination: The loadAllData() function retrieves every item and user at once. Implementing limit/offset logic in the SQL queries and lazy-loading in Angular will ensure the platform remains lightning-fast even when the database hits 10,000+ artifacts.
+
+Phase 4: Feature Expansion
+Stripe / Payment Gateway Integration: Transitioning the XP currency from a closed-loop database number to a purchasable digital currency using a secure payment processor.
+
+Escrow System: For high-value transactions in the standard marketplace, implementing a system where the XP is held in escrow until the buyer confirms physical receipt of the retro artifact.
+
+Soft Close (Anti-Snipe) Logic: Adding a rule to the PHP bidding function: if a bid is placed in the final 60 seconds of an auction, the timer automatically extends by 2 minutes. This prevents automated bots from sniping artifacts at the last millisecond and drives up the final XP price.
